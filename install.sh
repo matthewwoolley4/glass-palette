@@ -35,7 +35,24 @@ command -v spicetify >/dev/null 2>&1 || {
   exit 1
 }
 
-T="$(spicetify path userdata 2>/dev/null || echo "$HOME/.config/spicetify")/Themes/GlassPalette"
+# The first time Spicetify runs it writes its config and says so on stdout; let it do that here, or the message ends
+# up inside the folder path below and the theme lands somewhere Spicetify never looks ("Theme not found").
+spicetify config >/dev/null 2>&1 || true
+U="$(spicetify path userdata 2>/dev/null | tail -n 1)"
+[ -d "$U" ] || U="$HOME/.config/spicetify"
+T="$U/Themes/GlassPalette"
+
+# Spotify writes its settings file (prefs) on its first launch, and Spicetify cannot apply anything without it. A
+# Spotify that was installed but never opened fails here with a message about prefs_path; say what to do instead.
+PREFS_FOUND=""
+for P in "$HOME/Library/Application Support/Spotify/prefs" "$HOME/.config/spotify/prefs" "$HOME/.var/app/com.spotify.Client/config/spotify/prefs"; do
+  [ -f "$P" ] && PREFS_FOUND=1
+done
+if [ -z "$PREFS_FOUND" ] && [ -z "$(spicetify config prefs_path 2>/dev/null | tail -n 1)" ]; then
+  echo "Spotify has not been opened on this machine yet, so it has no settings file for Spicetify to work with." >&2
+  echo "Open Spotify once, sign in, quit it, then run this again." >&2
+  exit 1
+fi
 mkdir -p "$T" && cp dist/GlassPalette/* "$T/"
 spicetify config current_theme GlassPalette color_scheme Glass inject_css 1 replace_colors 1 inject_theme_js 1 >/dev/null
 spicetify backup >/dev/null 2>&1 || true   # first run only; later runs already have one

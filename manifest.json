@@ -4,10 +4,10 @@
     "description": "Frosted glass capsules holding the playing song's colour on a near-black stage. The whole app is glass; full screen is a stage that recolours to every song and breathes on the beat; lyrics are letters cut from frosted glass.",
     "preview": "docs/preview.jpg",
     "readme": "README.md",
-    "usercss": "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.0/dist/GlassPalette/user.css",
-    "schemes": "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.0/dist/GlassPalette/color.ini",
+    "usercss": "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.1/dist/GlassPalette/user.css",
+    "schemes": "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.1/dist/GlassPalette/color.ini",
     "include": [
-      "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.0/dist/GlassPalette/theme.js"
+      "https://cdn.jsdelivr.net/gh/matthewwoolley4/glass-palette@v1.1.1/dist/GlassPalette/theme.js"
     ],
     "authors": [
       {

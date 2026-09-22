@@ -13,7 +13,7 @@ if ! command -v spicetify >/dev/null 2>&1; then
   command -v spicetify >/dev/null 2>&1 || { echo "Spicetify did not install. See https://spicetify.app/docs/getting-started" >&2; exit 1; }
 fi
 # The release this installs. tools/release.py sets it; main is where work happens, a tag is what people get.
-VERSION="v1.1.0"
+VERSION="v1.1.1"
 DIR="$HOME/.glass-palette"; TMP="$(mktemp -d)"
 curl -fsSL "https://github.com/matthewwoolley4/glass-palette/archive/refs/tags/$VERSION.tar.gz" | tar -xz -C "$TMP"
 rm -rf "$DIR"; mv "$TMP"/glass-palette-* "$DIR"; rm -rf "$TMP"

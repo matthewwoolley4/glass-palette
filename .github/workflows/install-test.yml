@@ -39,6 +39,8 @@ jobs:
           # the binary itself, in the background: `open` can hang on a brand-new Mac waiting on first-launch checks
           (/Applications/Spotify.app/Contents/MacOS/Spotify >/dev/null 2>&1 &)
           for i in $(seq 1 60); do [ -f "$HOME/Library/Application Support/Spotify/prefs" ] && break; sleep 2; done
+          # a runner has no screen to finish Spotify's first launch on; stand in for that one launch
+          [ -f "$HOME/Library/Application Support/Spotify/prefs" ] || { mkdir -p "$(dirname "$HOME/Library/Application Support/Spotify/prefs")"; : > "$HOME/Library/Application Support/Spotify/prefs"; echo 'prefs created by the test'; }
           sleep 5; pkill -x Spotify || true; sleep 3
           ls -la "$HOME/Library/Application Support/Spotify/" | head
 
@@ -84,6 +86,8 @@ jobs:
         run: |
           (xvfb-run -a spotify --no-zygote >/dev/null 2>&1 &)
           for i in $(seq 1 60); do [ -f "$HOME/.config/spotify/prefs" ] && break; sleep 2; done
+          # a runner has no screen to finish Spotify's first launch on; stand in for that one launch
+          [ -f "$HOME/.config/spotify/prefs" ] || { mkdir -p "$(dirname "$HOME/.config/spotify/prefs")"; : > "$HOME/.config/spotify/prefs"; echo 'prefs created by the test'; }
           sleep 5; pkill -f /usr/share/spotify/spotify || true; sleep 3
           ls -la "$HOME/.config/spotify/" | head
 

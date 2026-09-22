@@ -49,8 +49,20 @@ if (-not (Get-Command spicetify -ErrorAction SilentlyContinue)) {
   throw "Spicetify is not on PATH. Install it with:  iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex  then open a new PowerShell window and run this again."
 }
 
-$themes = Join-Path $env:LOCALAPPDATA "spicetify\Themes"
-if (-not (Test-Path $themes)) { $themes = Join-Path $env:APPDATA "spicetify\Themes" }
+# The first time Spicetify runs it writes its config and says so on the console; let it do that here, or the message
+# ends up inside the folder path below and the theme lands somewhere Spicetify never looks ("Theme not found").
+spicetify config 2>$null | Out-Null
+$userdata = (spicetify path userdata 2>$null | Select-Object -Last 1)
+if ($userdata -and (Test-Path $userdata)) { $themes = Join-Path $userdata "Themes" }
+else {
+  $themes = Join-Path $env:LOCALAPPDATA "spicetify\Themes"
+  if (-not (Test-Path $themes)) { $themes = Join-Path $env:APPDATA "spicetify\Themes" }
+}
+
+# Spotify writes its settings file (prefs) on its first launch, and Spicetify cannot apply anything without it.
+if (-not (Test-Path (Join-Path $env:APPDATA "Spotify\prefs")) -and -not (spicetify config prefs_path 2>$null | Select-Object -Last 1)) {
+  throw "Spotify has not been opened on this machine yet, so it has no settings file for Spicetify to work with. Open Spotify once, sign in, quit it, then run this again."
+}
 $dest = Join-Path $themes "GlassPalette"
 New-Item -ItemType Directory -Force $dest | Out-Null
 Copy-Item (Join-Path $PSScriptRoot "dist\GlassPalette\*") $dest -Force
