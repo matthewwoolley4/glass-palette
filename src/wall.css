@@ -1,0 +1,37 @@
+/* Glass Palette: the stage IS the wallpaper. The capsule group is cut from the real "raw" colourway (assets/wall-raw.webp,
+   embedded by build.py) and tinted to each song: hue-rotate from raw's teal (186 degrees) to the song's hue, saturation
+   from how colourful the song is. The CSS-drawn capsules stay in the file but are switched off here. */
+#office-glass-capsules { display: none; }
+#office-glass-wall {
+  position: absolute; left: 50%; top: var(--og-mid, 460px); z-index: 0; pointer-events: none;
+  width: min(1640px, 96vw); aspect-ratio: 1800 / 928; transform: translate(-50%, -50%) scale(var(--og-swell, 1));
+  background: var(--og-wall) center / contain no-repeat;
+  filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
+  transition: filter 1.4s ease, top 0.5s ease, opacity 1.2s ease, width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  /* the image's border feathers into the stage so its rectangle can never read as a panel ("you can see the edges") */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent), linear-gradient(180deg, transparent, #000 50px, #000 calc(100% - 50px), transparent);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
+/* the dock away (Spotify's idle while playing, ours while paused): the glass grows into the room it left */
+html.office-glass-idle #office-glass-wall { width: min(1880px, 104vw); }
+html.office-glass-paused #office-glass-wall { opacity: 0.8; }
+/* the artwork sits on the glass: a little bigger frame shadow so it reads as in front */
+html.office-glass-fs .cover-art { box-shadow: 0 0 0 1.5px rgb(from var(--rim) r g b / 0.75), 0 0 0 10px rgb(0 0 0 / 0.25), 0 0 0 11px rgb(from var(--rim) r g b / 0.30), 0 70px 130px rgb(0 0 0 / 0.85), 0 0 160px rgb(from var(--gs) r g b / 0.30); }
+
+/* a tooltip left behind by the dock fading out must not hang on the stage */
+html.office-glass-hidedock [role="tooltip"], html.office-glass-hidedock .tippy-box { display: none; }
+
+/* ---- the artist behind the glass ("the other song imagery is not being used") ----
+   The artist's own editorial photograph, far back and heavily treated: mostly grey, tinted to the song, feathered
+   to nothing at the edges, so it reads as a lit room behind the capsules and never competes with the artwork. */
+#office-glass-scene {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--og-scene, none); background-size: cover; background-position: center 28%;
+  opacity: var(--og-scene-op, 0.16); filter: grayscale(0.55) contrast(1.05) brightness(0.72) saturate(1.1) hue-rotate(calc(var(--og-hue, 0deg) * 0.35));
+  -webkit-mask-image: radial-gradient(120% 95% at 50% 40%, #000 12%, rgb(0 0 0 / 0.55) 45%, transparent 78%);
+          mask-image: radial-gradient(120% 95% at 50% 40%, #000 12%, rgb(0 0 0 / 0.55) 45%, transparent 78%);
+  transition: opacity 1.4s ease, filter 1.4s ease, background-image 0s;
+}
+html.office-glass-paused #office-glass-scene { opacity: calc(var(--og-scene-op, 0.16) * 0.7); }
+html.office-glass-idle #office-glass-scene { opacity: 0.20; }    /* dock away: the room comes up a little */

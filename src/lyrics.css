@@ -1,0 +1,94 @@
+/* Glass Palette: lyrics. A dark stage lit by the song's colour; the top and bottom dissolve into the glass.
+   The runtime labels each line data-og="passed | active | next" in the SAME frame Spotify moves the line.
+
+   v3, after the notes on v2 ("the line beside is wack, the wrap is too much, the way it selects",
+   "feels kinda slow moving"). The rules now:
+   - NO ornament: no bar beside the sung line, no blur, no depth-of-field, no glow halo. Selection is one thing:
+     the sung line is clean bright white, everything else is quietly dim. That is all.
+   - FAST: the light changes quickly, so the highlight lands with the word instead of drifting after it. It was
+     0.18 s for v3; see the bloom note at the foot of this file for why it is now 0.34 s.
+   - LESS WRAP: a wider column (up to 1280 px, was 1024) and tighter, slightly smaller type (40 px, was 48),
+     so most lines stay on one row.
+   - a line never changes size, weight or spacing when it becomes the sung one. */
+[style*="--lyrics-color-active"] {
+  --lyrics-color-background: transparent !important;
+  --lyrics-color-active: #ffffff !important;
+  --lyrics-color-inactive: rgb(246 241 232 / 0.46) !important;
+  --lyrics-color-passed: rgb(246 241 232 / 0.26) !important;
+  --lyrics-color-messaging: rgb(246 241 232 / 0.6) !important;
+}
+.main-view-container:has([style*="--lyrics-color-active"]) {
+  background:
+    radial-gradient(70% 50% at 36% 50%, rgb(from var(--gs) r g b / 0.26), transparent 72%),
+    radial-gradient(40% 40% at 94% 8%, rgb(from var(--gs2) r g b / 0.20), transparent 70%) !important;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 82%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 82%, transparent 100%);
+}
+/* the column: Spotify fixes it at 1024 px inside a centred flex row */
+[style*="--lyrics-color-active"] > div > div { width: min(1280px, calc(100% - 120px)) !important; max-width: none; flex: none; }
+[data-og] {
+  font-size: 40px; line-height: 1.22; text-wrap: balance;
+  color: var(--lyrics-color-inactive) !important; opacity: 1 !important; filter: none; transform: none !important;
+  text-shadow: none;
+  transition: color 0.34s cubic-bezier(0.25, 0.6, 0.25, 1), text-shadow 0.34s cubic-bezier(0.25, 0.6, 0.25, 1) !important;
+}
+[data-og="passed"] { color: var(--lyrics-color-passed) !important; }
+[data-og="active"] { color: #fff !important; text-shadow: 0 1px 22px rgb(from var(--gs) r g b / 0.45); }
+
+/* ---- the line taking the light ("the way the lyrics slide in could be more magical",
+   "lyrics switch slightly too quick") ----
+   v3 cut the switch to 0.18 s because v2 drifted after the words. That went one notch too far: at 0.18 s with a
+   flat ease-out the line does not light up, it snaps, and a snap has no moment in it. So the switch is 0.34 s on
+   a curve that leaves quickly and lands slowly, and the line blooms as it arrives: the glow overshoots to nearly
+   full strength in the first fifth of a second, then falls back over a second to the resting glow. The eye reads
+   the overshoot as the word being lit rather than being coloured in, which is the "magical" part, and the slow
+   settle is what stops it feeling quick.
+   Nothing moves: no size, no weight, no spacing, no position, which were v3's rules and still are. This is light
+   only, so it stays out of the reduce-motion block in touch.css, which exists for things that travel. */
+[data-og="active"] { animation: og-lyric-bloom 1.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes og-lyric-bloom {
+  0%   { text-shadow: 0 1px 8px rgb(from var(--gs) r g b / 0.14); }
+  20%  { text-shadow: 0 1px 30px rgb(from var(--gs) r g b / 0.90), 0 0 88px rgb(from var(--gs) r g b / 0.42); }
+  100% { text-shadow: 0 1px 22px rgb(from var(--gs) r g b / 0.45); }
+}
+[data-og]:hover { color: rgb(246 241 232 / 0.85) !important; }
+
+/* no ornament beside the sung line, ever (also overrides any older copy of this theme still loaded) */
+[data-og]::before, [data-og]::after { content: none; display: none; }
+
+/* ---- v4 ("lyric mode could be WAY more beautiful") ----
+   The page is the stage: the wallpaper's glass, tinted to the song, sits faint behind the words; the words are
+   centred, larger and airier; waiting lines are soft frosted white (no hollow outline), the sung line is lit. */
+.main-view-container:has([style*="--lyrics-color-active"]) { position: relative; isolation: isolate; }
+.main-view-container:has([style*="--lyrics-color-active"])::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--og-wall) center 40% / 108% auto no-repeat;    /* wider than the pane: its edges fall outside, no shape shows */
+  opacity: 0.26; filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
+  transition: filter 1.4s ease;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);   /* a radial mask here drew a circle */
+}
+[style*="--lyrics-color-active"] > div > div { width: min(1040px, calc(100% - clamp(32px, 8vw, 160px))) !important; margin-inline: auto !important; }
+/* the wallpaper behind the words is a photograph stretched over a whole pane; at 26% on a near-black ground its
+   own gradients band. A fine grain over the top dithers the steps away, the same trick the full-screen stage uses. */
+.main-view-container:has([style*="--lyrics-color-active"])::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+/* Left aligned, in a centred column. Centring every line puts a ragged edge on both sides and the eye has to find
+   the start of each one; a single left edge reads as a lyric sheet ("left aligned cleaner"). */
+[data-og] {
+  text-align: left; font-size: calc(clamp(26px, 2.4vw, 46px) * var(--og-ui)); line-height: 1.28; font-weight: 700; letter-spacing: -0.02em;
+  padding-block: 10px !important; text-wrap: pretty;
+}
+[data-og="next"] { -webkit-text-fill-color: rgb(246 241 232 / 0.34) !important; -webkit-text-stroke: 0 transparent !important; text-shadow: none !important; }
+[data-og="passed"] { -webkit-text-fill-color: rgb(246 241 232 / 0.16) !important; -webkit-text-stroke: 0 transparent !important; text-shadow: none !important; }
+/* The glow is two tight layers, not one wide one. A 70 px blur at 35% alpha spreads about four values of colour
+   over a hundred pixels, which 8-bit cannot hold, so it banded into visible rings ("the glow
+   feels slightly off kinda pixelated"). Short radii at higher alpha land inside what the display can show. */
+[data-og="active"] {
+  -webkit-text-fill-color: #ffffff !important; -webkit-text-stroke: 0 transparent !important;
+  text-shadow: 0 0 9px rgb(from var(--gs) r g b / 0.60), 0 0 22px rgb(from var(--gs) r g b / 0.42), 0 2px 4px rgb(0 0 0 / 0.55) !important;
+}
+[data-og]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.7) !important; }
+/* the little "Lyrics provided by" line and the pane's own header keep out of the way */
+[style*="--lyrics-color-active"] .lyrics-lyrics-provider, [style*="--lyrics-color-active"] [class*="provider" i] { opacity: 0.35; text-align: center; }

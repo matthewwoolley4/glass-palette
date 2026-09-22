@@ -1,0 +1,76 @@
+/* Glass Palette: touch. Written against a cheap USB touchscreen, which is where every rough edge below showed up.
+   The runtime adds html.office-glass-touch on the first touch and removes it when a mouse moves. While a finger is
+   the pointer: no hover states (Chromium leaves a tapped element "hovered", so cards stayed lifted and rows stayed
+   lit), no press-scale (it reads as lag under a finger), no tap highlight, no double-tap zoom delay. */
+button, a, [role="button"], .main-trackList-trackListRow, .main-card-card { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html.office-glass-touch button:active { transform: none !important; }
+html.office-glass-touch .main-card-card:hover, html.office-glass-touch [data-encore-id="card"]:hover {
+  transform: none !important;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.10), 0 10px 30px rgb(0 0 0 / 0.30);
+}
+html.office-glass-touch .main-trackList-trackListRow:hover:not(.main-trackList-selected):not(:has(.main-trackList-playingIcon)) { background: transparent !important; box-shadow: none; }
+html.office-glass-touch [data-og]:hover { -webkit-text-fill-color: inherit !important; }
+html.office-glass-touch [data-og="next"]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.34) !important; }
+html.office-glass-touch [data-og="passed"]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.16) !important; }
+html.office-glass-touch .player-controls__buttons button:not([data-testid="control-button-playpause"]):hover svg { color: rgb(from var(--rim) r g b / 0.80); filter: none; }
+/* touch targets in the dock: nothing under 44 px, a little air between the beads */
+html.office-glass-touch aside.main-nowPlayingBar-container button { min-width: 44px; min-height: 44px; }
+/* Except the little text chips beside the track ("Lossless"), which Spotify happens to build as buttons. A 44 px
+   box around one makes the info column taller than the artwork it sits next to, which pushes the title and artist
+   above the artwork's centre line ("the artist in the bar bottom left is not aligned right").
+   A label is not a target.
+   Same for the "Playing on <device>" pill. It is a text line the theme parks in the dock's bottom-right corner
+   (lists.css), so a 44 px box grows it upward into the volume and queue row above it and leaves it jammed against
+   the panel's rounded corner ("the playing on [speaker] button overlaps a bit"). It stays tappable at
+   its natural size, and the row above already carries a full-size Connect button. */
+html.office-glass-touch aside.main-nowPlayingBar-container .encore-text-marginal button,
+html.office-glass-touch aside.main-nowPlayingBar-container .encore-bright-accent-set button { min-width: 0; min-height: 0; }
+html.office-glass-touch .main-nowPlayingBar-center .player-controls__buttons { gap: 18px !important; }
+
+/* dragging a list to scroll it must not select the words in it (src/touch.js does the scrolling) */
+html.office-glass-dragging, html.office-glass-dragging * { user-select: none; -webkit-user-select: none; }
+/* the mouse arrow, parked wherever the last tap landed, is noise on a touchscreen */
+html.office-glass-nocursor, html.office-glass-nocursor * { cursor: none !important; }
+
+/* Home shortcut tiles: Spotify's play button there is meant for hover; on this build it stayed painted as a white
+   bead over the tile's text. Show it only while the tile is hovered (never on touch: the tile itself opens). */
+.main-home-content section:first-of-type .main-playButton-PlayButton, [data-testid="home-page"] section:first-of-type .main-playButton-PlayButton { opacity: 0; transition: opacity 0.25s ease; }
+.main-home-content section:first-of-type div:hover > div > div > .main-playButton-PlayButton, [data-testid="home-page"] section:first-of-type div:hover > div > div > .main-playButton-PlayButton { opacity: 1; }
+/* a finger cannot hover: every play control that Spotify reveals on hover is simply there, and big enough to hit
+   ("the play button is hard to hit on songs") */
+/* Except on the shortcut tiles. Spotify fades that bead's glyph in on hover, a separate opacity from the bead
+   itself, so forcing the bead visible left a blank warm-white circle sitting on every tile.
+   A finger has nothing to hover and the tile already opens on a tap, so the bead goes.
+   Scope it the way the two rules above are scoped. A bare `section:first-of-type` also matches the <section> a
+   playlist, album or artist page is built from, which hid the big Play button on every one of them and left no
+   way to start anything by touch ("i cant see where to play daily mix 5"). */
+html.office-glass-touch .main-home-content section:first-of-type .main-playButton-PlayButton,
+html.office-glass-touch [data-testid="home-page"] section:first-of-type .main-playButton-PlayButton { display: none; }
+/* anywhere a bead IS shown to a finger, its glyph is shown with it */
+html.office-glass-touch .main-playButton-PlayButton button > span,
+html.office-glass-touch .main-card-PlayButtonContainer button > span { opacity: 1 !important; }
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowImagePlayButton { opacity: 1 !important; width: 44px; height: 44px; margin: -10px; padding: 10px; }
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowMarker,
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowSectionIndex > span:not(:has(button)) { display: none; }   /* the number gives way to the play */
+html.office-glass-touch .main-trackList-rowSectionIndex { justify-content: center; }
+html.office-glass-touch .main-card-PlayButtonContainer, html.office-glass-touch .main-card-card .main-playButton-PlayButton { opacity: 1 !important; transform: none !important; }
+html.office-glass-touch .main-card-PlayButtonContainer button, html.office-glass-touch .main-card-card .main-playButton-PlayButton button { width: 48px !important; height: 48px !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { transition: none !important; }
+  #office-glass-capsules, #office-glass-title, .cover-art,
+  .main-card-card, .main-trackList-trackListRow, .Root__now-playing-bar,
+  aside.main-nowPlayingBar-container, [data-testid="control-button-playpause"] {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* the dock's play is the most-tapped thing on the screen: give it a real target */
+html.office-glass-touch aside.main-nowPlayingBar-container [data-testid="control-button-playpause"] { width: calc(58px * var(--og-ui)) !important; height: calc(58px * var(--og-ui)) !important; }
+html.office-glass-touch aside.main-nowPlayingBar-container [data-testid="control-button-playpause"] > span:first-child { width: 100% !important; height: 100% !important; display: flex; align-items: center; justify-content: center; }
+html.office-glass-touch aside.main-nowPlayingBar-container [data-testid="control-button-playpause"] svg { width: 26px !important; height: 26px !important; }
+html.office-glass-touch aside.main-nowPlayingBar-container .player-controls__buttons button svg { width: 22px !important; height: 22px !important; }
+html.office-glass-touch aside.main-nowPlayingBar-container .main-nowPlayingBar-nowPlayingBar { padding-block: 14px 18px !important; }
+html.office-glass-touch .playback-bar .progress-bar { padding-block: 10px !important; }

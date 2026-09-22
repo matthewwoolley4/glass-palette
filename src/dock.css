@@ -1,0 +1,24 @@
+/* Glass Palette: the dock and the stage under it ("when bottom menu fades out its just black at
+   bottom, no extension" and "bottom menu is taking a lot of space").
+   Full screen is one black stage from edge to edge. The dock floats on it; when the dock goes, its row collapses and
+   the stage takes the room back, the way Spotify's own idle layout does while playing. */
+
+/* the grain covers the whole window, not the cinema panel: no seam where the dock row begins, no 8 px frame */
+html.office-glass-fs [style*="--cinema-mode-bg-color-from"]::after { position: fixed; inset: 0 !important; }
+
+/* paused and untouched: the dock fades and its row folds away (max-height animates, height:auto would not) */
+html.office-glass-fs .Root__now-playing-bar {
+  max-height: 210px; overflow: hidden;
+  transition: max-height 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+}
+html.office-glass-hidedock .Root__now-playing-bar { max-height: 0; opacity: 0; pointer-events: none; }
+html.office-glass-hidedock aside.main-nowPlayingBar-container { opacity: 1; }   /* the row does the fading now */
+
+/* a shorter dock: tighter padding, less margin, the same beads and bars */
+aside.main-nowPlayingBar-container { margin: 0 10px 10px !important; }   /* the dock takes the window's width, not a framed strip of it */
+aside.main-nowPlayingBar-container .main-nowPlayingBar-nowPlayingBar { padding: 6px 12px !important; height: auto !important; min-height: 0; }   /* Spotify fixes it at 120 px */
+aside.main-nowPlayingBar-container .encore-bright-accent-set { margin: 0 auto 7px !important; padding: 3px 14px 3px 10px !important; }
+
+/* full screen on the touchscreen: the "Hide in this playlist" bead sits right beside the like bead and looks the same;
+   a mis-tap hides a song from the playlist. It stays in the app view, it goes in the show. */
+html.office-glass-fs aside.main-nowPlayingBar-container button[aria-label^="Hide"] { display: none; }

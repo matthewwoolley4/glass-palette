@@ -1,0 +1,10 @@
+dist/*
+!dist/GlassPalette/
+*.good-*
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+assets/wall-raw.webp
+assets/*-preview.png
+.leakcheck.local

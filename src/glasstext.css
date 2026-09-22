@@ -1,0 +1,17 @@
+/* Glass Palette: glass text ("text is not glassy enough").
+   Lyrics: every waiting line is a letter cut from frosted glass: a translucent body with a fine bright rim.
+   The sung line is the same glass with the light switched on: solid white, the song's colour glowing in it.
+   Only fill and rim COLOURS change, so it stays fast (0.18 s) and nothing moves or resizes.
+   Full-screen title: a pane of glass too, lit from above (white at the top easing to warm translucent). */
+/* lyric letter rules moved to lyrics.css v4 (2026-09-21): solid frosted fill, no outline */
+
+/* the full-screen title is solid warm white (fullscreen.css): the gradient-clipped glass version read as "bubbled", 2026-09-21 */
+#office-glass-title b { -webkit-text-fill-color: var(--rim); background: none; filter: none; }
+html[data-voice="neon"] #office-glass-title b { text-shadow: 0 2px 10px rgb(0 0 0 / 0.75), 0 0 24px rgb(from var(--gs) r g b / 0.6); }
+
+/* big page titles in the app ("Liked Songs"): the same glass */
+.main-entityHeader-title h1 {
+  background: linear-gradient(180deg, #ffffff 0%, rgb(246 241 232 / 0.94) 45%, rgb(246 241 232 / 0.52) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 22px rgb(0 0 0 / 0.45));   /* no stroke: at 1080p a hairline stroke on 90 px type reads as aliasing */
+}

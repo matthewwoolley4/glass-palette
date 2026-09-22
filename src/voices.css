@@ -1,0 +1,38 @@
+/* Glass Palette: type. ONE family for the whole app: Manrope (the serif "concert" voices felt
+   wack, he wants playful and modern "like manrope or switzer"). Manrope is embedded by build.py from fonts/.
+   The concert idea survives inside the family: each song still gets a voice chosen by the runtime from its colour
+   and tempo (html[data-voice]), but a voice is only weight, case and spacing. Never a different typeface. */
+:root, body {
+  --encore-title-font-stack: "Manrope", "Avenir Next", system-ui, sans-serif;
+  --encore-body-font-stack: "Manrope", "Avenir Next", system-ui, sans-serif;
+  --encore-variable-font-stack: "Manrope", "Avenir Next", system-ui, sans-serif;
+  --font-family: "Manrope", "Avenir Next", system-ui, sans-serif;
+}
+body, button, input, textarea, select, h1, h2, h3, h4, p, span, a, div { font-family: "Manrope", "Avenir Next", system-ui, sans-serif; }
+body { font-feature-settings: "ss01", "cv11"; }   /* no grayscale smoothing and no tightening: on the 1080p panel both read as thin, ragged type ("weirdly aliased") */
+
+:root { --vw: 700; --vt: -0.025em; --vc: none; --vsize: 36px; --vlh: 42px; }
+html[data-voice="poster"]  { --vw: 800; --vt: 0.03em;   --vc: uppercase; --vsize: 35px; --vlh: 42px; }   /* fast and warm: loud caps */
+html[data-voice="couture"] { --vw: 300; --vt: -0.035em; --vc: none;      --vsize: 44px; --vlh: 48px; }   /* slow and cool: big, light, close-set */
+html[data-voice="neon"]    { --vw: 800; --vt: 0.06em;   --vc: uppercase; --vsize: 33px; --vlh: 40px; }   /* fast pinks: caps with a glow */
+html[data-voice="gallery"] { --vw: 200; --vt: 0.26em;   --vc: uppercase; --vsize: 30px; --vlh: 40px; }   /* black and white covers: thin and wide */
+html[data-voice="classic"] { --vw: 600; --vt: -0.03em;  --vc: none;      --vsize: 40px; --vlh: 46px; }   /* mid tempo, warm: confident sentence case */
+html[data-voice="velvet"]  { --vw: 500; --vt: 0.12em;   --vc: uppercase; --vsize: 32px; --vlh: 42px; }   /* slow and rich: spaced medium caps */
+
+/* the voice may change case and spacing, never readability: weight never under 700, spacing never past 0.10em,
+   size never under 36 px (the thin wide "gallery" voice was hard to read on grey songs) */
+#office-glass-title b {
+  font-weight: clamp(700, var(--vw), 800); letter-spacing: clamp(-0.03em, var(--vt), 0.10em); text-transform: var(--vc);
+  font-size: calc(max(36px, var(--vsize)) * var(--og-ui)); line-height: calc(max(44px, var(--vlh)) * var(--og-ui));
+}
+#office-glass-title span { font-weight: 700; }
+html[data-voice="neon"] #office-glass-title b {
+  text-shadow: 0 0 26px rgb(from var(--gs) r g b / 0.95), 0 0 70px rgb(from var(--gs) r g b / 0.55), 0 2px 20px rgb(0 0 0 / 0.6);
+}
+
+/* lyrics: one weight and spacing for EVERY line, sung or not, so nothing changes size when a line lights up */
+[data-og] { font-weight: 700; letter-spacing: -0.03em; }
+html[data-voice="gallery"] [data-og], html[data-voice="couture"] [data-og] { font-weight: 500; }
+
+/* big page titles */
+.main-entityHeader-title h1, .main-entityHeader-title { font-weight: 800; letter-spacing: -0.045em; }

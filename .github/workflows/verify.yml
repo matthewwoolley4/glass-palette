@@ -1,0 +1,55 @@
+# Rebuilds the theme from src/ and fails if the committed dist/GlassPalette does not match byte for byte.
+#
+# dist/ is committed, because that is what the Spicetify Marketplace serves and what the installers copy. That is
+# convenient and it is also the one place where a theme could ship something that is not in its source. This runs on
+# every push, so the green check on the repository is a standing, public statement that the files people install are
+# exactly what the source produces. Anyone can run the same thing locally: python tools/verify.py
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproducible-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # No pip install on purpose. build.py and tools/verify.py use only the standard library, so there is no
+      # dependency that could change what gets built between this run and someone else's.
+      - name: Rebuild from source and compare to the committed dist/
+        run: python tools/verify.py
+
+      # Secrets, private addresses, home paths, emails, the private wallpaper and image metadata. CI has no
+      # .leakcheck.local, so the owner's own terms are checked by the pre-commit hook on their machine instead.
+      - name: Check nothing private is in the repository
+        run: python tools/leakcheck.py
+
+      - name: Check no personal wallpaper was published
+        run: |
+          python - <<'PY'
+          import re, base64, hashlib, sys
+          # assets/wall-raw.webp is gitignored and must never reach a build. Every embedded image has to be the
+          # committed public render, assets/wall.webp.
+          public = hashlib.sha256(open('assets/wall.webp','rb').read()).hexdigest()
+          bad = 0
+          seen = 0
+          for f in ('dist/GlassPalette/user.css', 'dist/GlassPalette/theme.js'):
+              for m in re.finditer(r'data:image/webp;base64,([A-Za-z0-9+/=]+)', open(f, encoding='utf-8').read()):
+                  seen += 1
+                  if hashlib.sha256(base64.b64decode(m.group(1))).hexdigest() != public:
+                      print(f"FAIL: {f} embeds an image that is not assets/wall.webp")
+                      bad += 1
+          print(f"{seen} embedded images checked, {bad} unexpected")
+          sys.exit(1 if bad or seen == 0 else 0)
+          PY

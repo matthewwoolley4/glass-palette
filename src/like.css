@@ -1,0 +1,44 @@
+/* Glass Palette: the moment you like a song. The runtime fires it only on a real tap that turns the like ON:
+   a ring of light leaves the button, a wave of light rolls outward through the capsules (driven in runtime.js),
+   the artwork's frame flares in the song's colour, glass sparks rise, and the Liked bead pops in.
+   Everything is transform and opacity, so it costs nothing. Un-liking is quiet on purpose. */
+#office-glass-fx { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+#office-glass-fx .ring {
+  position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
+  border: 1.5px solid rgb(from var(--rim) r g b / 0.8); box-shadow: 0 0 24px var(--gs), inset 0 0 18px rgb(from var(--gs) r g b / 0.6);
+}
+#office-glass-fx .spark {
+  position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--gs) 60%, transparent 72%);
+  box-shadow: 0 0 12px rgb(from var(--gs) r g b / 0.9);
+}
+#office-glass-fx .spark.w { background: radial-gradient(circle at 35% 30%, #fff, var(--rim) 60%, transparent 72%); box-shadow: 0 0 10px rgb(255 255 255 / 0.8); }
+#office-glass-fx .heart { position: absolute; margin: -11px 0 0 -11px; width: 22px; height: 22px; color: #fff; filter: drop-shadow(0 0 10px var(--gs)); }
+#office-glass-fx .heart svg { width: 100%; height: 100%; fill: currentColor; }
+
+/* the artwork's glass frame flares once */
+html.office-glass-liked-burst.office-glass-fs .cover-art { animation: office-glass-flare 2s ease-in-out; }
+@keyframes office-glass-flare {
+  0%   { box-shadow: 0 0 0 1.5px rgb(246 241 232 / 0.70), 0 0 0 10px rgb(255 255 255 / 0.075), 0 0 0 11px rgb(246 241 232 / 0.22), 0 60px 120px rgb(0 0 0 / 0.70), 0 0 160px rgb(from var(--gs) r g b / 0.34); }
+  30%  { box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.9), 0 0 0 10px rgb(from var(--gs) r g b / 0.22), 0 0 0 11px rgb(255 255 255 / 0.32), 0 60px 120px rgb(0 0 0 / 0.70), 0 0 210px rgb(from var(--gs) r g b / 0.62); }
+  100% { box-shadow: 0 0 0 1.5px rgb(246 241 232 / 0.70), 0 0 0 10px rgb(255 255 255 / 0.075), 0 0 0 11px rgb(246 241 232 / 0.22), 0 60px 120px rgb(0 0 0 / 0.70), 0 0 160px rgb(from var(--gs) r g b / 0.34); }
+}
+/* v2 (the pop "feels weird"): no bounce anywhere. The bead and the button simply come up to full light. */
+#office-glass-title.liked em.l { animation: office-glass-settle 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@keyframes office-glass-settle { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Spotify's own "Added to Liked Songs" pop-up: a quiet pill of glass that rises in and fades, so it reads as part
+   of the same gesture instead of a second thing popping over the screen */
+[class*="notificationBubble" i], [class*="NotificationBubble"], .main-notificationBubble-NotificationBubble {
+  background: linear-gradient(180deg, rgb(28 32 40 / 0.82), rgb(14 17 22 / 0.82)) !important; color: var(--rim) !important;
+  border-radius: 999px !important; border: 1px solid rgb(from var(--rim) r g b / 0.20) !important; padding: 10px 22px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 20px 50px rgb(0 0 0 / 0.55), 0 0 40px rgb(from var(--gs) r g b / 0.22);
+  backdrop-filter: blur(24px) saturate(150%);
+  font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  animation: office-glass-settle 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+[class*="notificationBubble" i] *, [class*="NotificationBubble"] * { color: var(--rim) !important; background: transparent !important; }
+[class*="notificationBubble" i] img, [class*="NotificationBubble"] img { width: 22px !important; height: 22px !important; border-radius: 6px !important; }
+
+/* the toast never takes a tap meant for the button under it ("clicking the liked takes a few clicks") */
+[class*="notificationBubble" i], [class*="NotificationBubble"], .main-notificationBubble-NotificationBubble, [class*="notificationBubble" i] * { pointer-events: none; }

@@ -1,0 +1,183 @@
+/* Glass Palette: the app's lists and shelves ("the playlist / daily mix and lists could be styled
+   much better", "play bar feels too narrow, alignment and spacing off", "What do you want to play menu more glassy").
+   One rule: content sits on glass, the playing row is lit by the song, chrome stays warm white. */
+
+/* ---- search: ONE pane of glass (the form is the pill; the input and the section around it are clear), and wider ---- */
+.main-globalNav-searchSection form, .main-globalNav-searchInputSection form {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.045)) !important; border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.16), 0 5px 14px rgb(0 0 0 / 0.24);
+  -webkit-backdrop-filter: blur(10px) saturate(135%);
+  backdrop-filter: blur(10px) saturate(135%);
+  transition: background 0.14s ease-out, box-shadow 0.14s ease-out;
+}
+.Root__globalNav .main-globalNav-searchInputSection, .Root__globalNav .main-globalNav-searchInputWrapper, .Root__globalNav .main-globalNav-searchContainer, .Root__globalNav .main-globalNav-searchContainer > div,
+.Root__globalNav .main-globalNav-searchInputContainer input, .Root__globalNav [data-testid="search-input"], .Root__globalNav form input { background: none !important; box-shadow: none; backdrop-filter: none; }
+.main-globalNav-searchInputContainer input, [data-testid="search-input"] { color: var(--rim) !important; border-radius: 999px !important; }
+.main-globalNav-searchInputContainer input::placeholder, [data-testid="search-input"]::placeholder { color: rgb(from var(--rim) r g b / 0.55) !important; }
+.main-globalNav-searchSection form:focus-within, .main-globalNav-searchInputSection form:focus-within {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.34), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.34), 0 0 0 3px rgb(from var(--gs) r g b / 0.20), 0 6px 16px rgb(0 0 0 / 0.26);
+}
+.main-globalNav-searchSection svg, .main-globalNav-searchInputContainer svg { color: rgb(from var(--rim) r g b / 0.80) !important; }
+/* wider: Spotify caps the pill at 474 px; give it the middle of the bar */
+.main-globalNav-searchContainer { max-width: min(820px, 48vw); width: 100% !important; }
+.main-globalNav-searchInputSection { flex: 1 1 auto; max-width: none; width: 100% !important; }
+.main-globalNav-searchInputSection form, .main-globalNav-searchInputWrapper, .main-globalNav-searchInputContainer input { width: 100% !important; max-width: none; }
+.Root__globalNav .main-globalNav-historyButtons button, .Root__globalNav [data-testid="home-button"], .Root__globalNav .main-globalNav-link-icon,
+.Root__globalNav .main-topBar-button, .Root__globalNav button[aria-label*="notification" i], .Root__globalNav button[aria-label*="Friend" i] {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.11), rgb(255 255 255 / 0.035)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14), 0 4px 12px rgb(0 0 0 / 0.22);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(8px) saturate(130%);
+  transition: background 0.14s ease-out, box-shadow 0.14s ease-out, color 0.14s ease-out;
+}
+.main-globalNav-historyButtons { width: auto !important; gap: 6px !important; }
+.Root__globalNav .main-globalNav-historyButtons button {
+  width: 40px !important; min-width: 40px !important; height: 40px !important; min-height: 40px; padding: 0 !important;
+}
+
+/* ---- the dock in the app: one wide block, the progress runs most of the width, the three groups share a centre line ---- */
+.main-nowPlayingBar-nowPlayingBar { display: grid; grid-template-columns: minmax(220px, 26%) 1fr minmax(220px, 26%) !important; align-items: center; column-gap: 24px !important; }
+.main-nowPlayingBar-left, .main-nowPlayingBar-right { width: auto !important; min-width: 0 !important; }
+.main-nowPlayingBar-center { max-width: none; width: 100% !important; justify-self: stretch; }
+.main-nowPlayingBar-center .playback-bar { width: 100% !important; max-width: none; }
+.main-nowPlayingBar-center .player-controls__buttons { gap: 14px !important; margin-bottom: 4px; }
+.main-nowPlayingBar-right { justify-content: flex-end; gap: 6px !important; align-self: start; margin-top: 6px; }   /* sits a touch high so the speaker pill has its corner */
+.main-nowPlayingBar-left { align-self: start; margin-top: 0; }   /* both side groups share the transport row's centre line, not the block's */
+.playback-bar__progress-time-elapsed, .playback-bar__progress-time, .main-playbackBarRemainingTime-container {
+  font-variant-numeric: tabular-nums; letter-spacing: 0.02em; color: rgb(from var(--rim) r g b / 0.70) !important; min-width: 44px !important;
+}
+.x-progressBar-progressBarBg { height: 4px !important; border-radius: 4px !important; }
+/* "Playing on <speaker>" moves into the dock's bottom-right corner, off the block's height */
+aside.main-nowPlayingBar-container { position: relative; }
+aside.main-nowPlayingBar-container .encore-bright-accent-set { position: absolute; right: 18px; bottom: 6px; margin: 0 !important; }
+aside.main-nowPlayingBar-container .main-nowPlayingBar-nowPlayingBar { padding: 10px 18px 16px !important; }
+/* Spotify's artwork container is a grey placeholder tinted by the album, squared off at 4 px, sitting behind an
+   image the theme rounds further. Its corners were showing around the art as four coloured wedges
+   ("why the corners still?"). Round the container to match and take its fill away. */
+.main-nowPlayingWidget-coverArtContainer { margin-right: 14px !important; border-radius: 10px !important; background: transparent !important; overflow: hidden; }
+.main-nowPlayingWidget-coverArtContainer .cover-art, .main-nowPlayingWidget-coverArt,
+.main-nowPlayingWidget-coverArtContainer img { border-radius: 10px !important; background: transparent !important; }
+/* the same wedges in the right panel and anywhere else a cover sits in a tinted box */
+.cover-art, .cover-art .cover-art-image { background: transparent !important; }
+.main-trackInfo-name { font-weight: 700; letter-spacing: -0.01em; }
+.main-trackInfo-artists, .main-trackInfo-artists a { color: rgb(from var(--rim) r g b / 0.62) !important; }
+
+/* ---- shelves and cards (Home, Daily Mixes, Made for you) ---- */
+/* shelves breathe: a row of cards needs air above its heading and below its last row, or the page reads as one
+   dense block ("gap lacking") */
+section[data-testid="component-shelf"], .main-shelf-shelf { margin-bottom: 34px; }
+.main-shelf-header, section[data-testid="component-shelf"] > div:first-child { padding-inline: 4px !important; margin-bottom: 14px; margin-top: 10px; }
+.main-shelf-title, .main-shelf-header h2, section[data-testid="component-shelf"] h2, .main-shelf-header a[href] > span:first-child,
+[data-testid="home-page"] h2 { font-weight: 800; letter-spacing: -0.025em; color: var(--rim) !important; }
+.main-shelf-seeAll, .main-shelf-header a[href*="section"], section[data-testid="component-shelf"] > div:first-child a[href] {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(from var(--rim) r g b / 0.70) !important;
+  padding: 6px 14px !important; border-radius: 999px !important; background: rgb(255 255 255 / 0.06) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14);
+}
+/* Cards carry inset rims only. A 30 px drop shadow on every card means a separate blur pass per card on every
+   scrolled frame, and a home page holds sixty of them ("when i scroll vertical its slow").
+   The glass reads the same from the rim and the fill; the blur was doing nothing the eye can name. */
+.main-card-card, [data-testid="card"] .main-card-card, [data-encore-id="card"] {
+  padding: 12px !important; border-radius: 20px !important;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.10);
+}
+.main-card-card:hover, [data-encore-id="card"]:hover {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.045)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.22), inset 0 0 22px rgb(from var(--gs) r g b / 0.10);
+}
+.main-card-card img, .main-cardImage-image, .main-card-imageContainer img, [data-encore-id="card"] img { border-radius: 14px !important; box-shadow: 0 0 0 1px rgb(from var(--rim) r g b / 0.16); }
+.main-cardHeader-text, .main-card-cardMetadata a, .main-card-cardMetadata [dir="auto"]:first-child { font-weight: 700; letter-spacing: -0.01em; color: var(--rim) !important; }
+.main-cardSubHeader-root, .main-card-cardMetadata > *:not(:first-child) { color: rgb(from var(--rim) r g b / 0.58) !important; }
+/* the card's play bead: warm white glass, rising from the artwork on hover, never green */
+.main-card-PlayButtonContainer, .main-card-card [data-testid="play-button"], .main-playButton-PlayButton {
+  border-radius: 50% !important; background: radial-gradient(120% 120% at 30% 18%, #ffffff, var(--rim) 46%, rgb(214 208 198)) !important;
+  box-shadow: inset 0 1.5px 0 #fff, 0 10px 26px rgb(0 0 0 / 0.55), 0 0 0 6px rgb(from var(--rim) r g b / 0.10);
+}
+/* Whatever Spotify calls the button in a given build, a bead the theme paints warm white carries a dark glyph.
+   The home shortcut tiles use a different component from the cards and came out as blank white circles. */
+.main-card-PlayButtonContainer svg, .main-playButton-PlayButton svg, .main-card-card [data-testid="play-button"] svg,
+.view-homeShortcutsGrid-shortcut [data-testid="play-button"] svg, [data-testid="home-shortcuts-grid"] [data-testid="play-button"] svg,
+.view-homeShortcutsGrid-shortcut [class*="PlayButton" i] svg, [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] svg,
+.main-card-card [class*="PlayButton" i] svg { fill: rgb(12 15 20) !important; color: rgb(12 15 20) !important; }
+.view-homeShortcutsGrid-shortcut [class*="PlayButton" i], [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] {
+  border-radius: 50% !important; background: radial-gradient(120% 120% at 30% 18%, #ffffff, var(--rim) 46%, rgb(214 208 198)) !important;
+}
+/* the shortcut tiles at the top of Home (the six wide tiles) */
+.view-homeShortcutsGrid-shortcut, [data-testid="home-shortcuts-grid"] > *, .main-home-content .main-heroCard-card {
+  border-radius: 16px !important; overflow: hidden;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.10), rgb(255 255 255 / 0.04)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.12);
+}
+.view-homeShortcutsGrid-shortcut:hover { background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.06)) !important; }
+.view-homeShortcutsGrid-shortcut img { border-radius: 12px 0 0 12px !important; }
+
+/* ---- track lists (playlists, albums, artist Popular) ---- */
+.main-trackList-trackListHeaderRow { border-bottom: 1px solid rgb(from var(--rim) r g b / 0.12) !important; margin-bottom: 8px; }
+.main-trackList-trackListHeaderRow, .main-trackList-column > span, .main-trackList-trackListHeader button { color: rgb(from var(--rim) r g b / 0.55) !important; font-size: 11.5px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; }
+.main-trackList-trackListRow { border-radius: 14px !important; padding-inline: 8px !important; transition: background 0.14s ease-out, box-shadow 0.14s ease-out !important; }
+.main-trackList-trackListRow:hover { background: linear-gradient(90deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.05)) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.10); }
+.main-trackList-trackListRow.main-trackList-selected { background: rgb(255 255 255 / 0.11) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.20); }
+/* the playing row is lit by the song: a wash of its colour and a lit edge on the left */
+.main-trackList-trackListRow:has(.main-trackList-playingIcon), .main-trackList-trackListRow:has(.main-trackList-rowTitle.main-trackList-active),
+.main-trackList-trackListRow:has([aria-label="Now playing"]) {
+  background: linear-gradient(90deg, rgb(from var(--gs) r g b / 0.22), rgb(from var(--gs) r g b / 0.06) 60%, transparent) !important;
+  box-shadow: inset 3px 0 0 rgb(from var(--gs) r g b / 0.9), inset 0 0 0 1px rgb(from var(--gs) r g b / 0.18);
+}
+.main-trackList-rowSectionIndex span, .main-trackList-rowMarker span { color: rgb(from var(--rim) r g b / 0.45) !important; font-variant-numeric: tabular-nums; font-weight: 600; }
+.main-trackList-rowTitle { font-weight: 600; letter-spacing: -0.005em; }
+.main-trackList-rowSubTitle, .main-trackList-rowSubTitle a, .main-trackList-rowSectionVariable a, .main-trackList-rowSectionVariable span,
+.main-trackList-rowSectionEnd .main-trackList-rowDuration, .main-trackList-rowSectionVariable [data-encore-id="text"] { color: rgb(from var(--rim) r g b / 0.60) !important; }
+.main-trackList-rowDuration, .main-trackList-rowSectionEnd span { font-variant-numeric: tabular-nums; }
+.main-trackList-rowImage, .main-trackList-rowImage img { border-radius: 8px !important; box-shadow: 0 0 0 1px rgb(from var(--rim) r g b / 0.18); }
+.main-trackList-rowHeartButton, .main-trackList-trackListRow button[aria-checked] { border-radius: 50% !important; }
+.main-trackList-trackListRow button[aria-checked="true"] svg, .main-trackList-trackListRow button[aria-checked="true"] path { fill: var(--gs) !important; color: var(--gs) !important; }
+.main-trackList-trackListRow button[aria-checked="true"] { filter: drop-shadow(0 0 6px rgb(from var(--gs) r g b / 0.7)); }
+.main-trackList-playingIcon { filter: none; }
+.main-trackList-playingIcon img, .main-trackList-playingIcon svg { filter: grayscale(1) brightness(2.4); }
+
+/* playlist / album / artist header: type and the stat line */
+.main-entityHeader-title h1 { margin-bottom: 6px; }
+.main-entityHeader-metaData, .main-entityHeader-metaData *, .main-entityHeader-subtitle, .main-entityHeader-detailsText { color: rgb(from var(--rim) r g b / 0.70) !important; }
+.main-entityHeader-metaData a { color: var(--rim) !important; font-weight: 700; }
+.main-entityHeader-image, .main-entityHeader-imageContainer img, .main-entityHeader-shadow {
+  border-radius: 16px !important; box-shadow: 0 0 0 1px rgb(from var(--rim) r g b / 0.35), 0 0 0 8px rgb(255 255 255 / 0.05), 0 30px 70px rgb(0 0 0 / 0.55);
+}
+.main-actionBar-ActionBar, .main-actionBar-ActionBarRow { padding-block: 12px !important; gap: 14px !important; }
+/* text buttons in the action row ("List", "Follow") are pills; icon-only ones stay bare (a pill around a 24 px icon made tall ovals on the PC build) */
+.main-actionBar-ActionBarRow button:not(.main-playButton-PlayButton):not([data-testid="play-button"]):not([data-is-icon-only="true"]):not(:has(> svg:only-child)):not(:has(> span > svg:only-child)) {
+  border-radius: 999px !important; background: linear-gradient(180deg, rgb(255 255 255 / 0.10), rgb(255 255 255 / 0.03)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14);
+}
+
+/* the like / hide beads in the dock are circles on every build (the PC build gives them a 24 x 44 box) */
+.main-nowPlayingWidget-nowPlaying button[aria-checked], .main-nowPlayingWidget-nowPlaying > button { width: 40px !important; height: 40px !important; min-width: 40px !important; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; }
+
+/* smaller windows (a laptop, a half-screen window): the dock and the lists give way gracefully */
+/* the dock's left group: the track info takes the room it needs and truncates, the beads never sit on the words
+   (in a narrow window the title was being overlapped by the like bead) */
+.main-nowPlayingBar-left .main-nowPlayingWidget-nowPlaying { display: flex; align-items: center; gap: 10px !important; min-width: 0 !important; width: 100% !important; }
+.main-nowPlayingBar-left .main-nowPlayingWidget-trackInfo { flex: 1 1 auto; min-width: 0 !important; overflow: hidden; }
+.main-nowPlayingBar-left .main-trackInfo-name, .main-nowPlayingBar-left .main-trackInfo-artists { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* Spotify's own overlay element inside the title is what actually holds the words; without this the title is cut
+   at both ends instead of ending in an ellipsis */
+.main-nowPlayingBar-left .main-trackInfo-overlay, .main-nowPlayingBar-left .main-trackInfo-name > * { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.main-nowPlayingBar-left .main-nowPlayingWidget-trackInfo { min-width: 120px !important; }
+.main-nowPlayingBar-left .main-nowPlayingWidget-actionButtonWrapper { flex: 0 0 auto; display: flex; gap: 4px !important; }
+.main-nowPlayingBar-left .main-coverSlotCollapsed-container { flex: 0 0 auto; }
+
+@media (max-width: 1180px) {
+  .main-nowPlayingBar-nowPlayingBar { grid-template-columns: minmax(150px, 28%) 1fr minmax(96px, 20%) !important; column-gap: 12px !important; }
+  aside.main-nowPlayingBar-container { margin: 0 12px 10px !important; }
+  aside.main-nowPlayingBar-container .main-nowPlayingBar-nowPlayingBar { padding: 8px 12px 14px !important; }
+  aside.main-nowPlayingBar-container .encore-bright-accent-set { right: 10px; bottom: 4px; }
+  aside.main-nowPlayingBar-container .encore-bright-accent-set span, aside.main-nowPlayingBar-container .encore-bright-accent-set button { font-size: 9px; letter-spacing: 0.14em; }
+  .main-nowPlayingBar-center .player-controls__buttons { gap: 8px !important; }
+  .main-trackList-trackListRow { padding-inline: 4px !important; }
+}
+@media (max-width: 900px) {
+  /* no room for the quality line or a second bead: the name, the artist and one action */
+  .main-nowPlayingBar-left .main-trackList-enhanced, .main-nowPlayingBar-left [class*="xsmall" i] { display: none; }
+  .main-nowPlayingBar-left .main-nowPlayingWidget-actionButtonWrapper button[aria-label^="Hide"] { display: none; }   /* the like stays, "Hide song" goes */
+  aside.main-nowPlayingBar-container .encore-bright-accent-set { display: none; }
+  .main-nowPlayingBar-nowPlayingBar { grid-template-columns: minmax(120px, 30%) 1fr minmax(72px, 18%) !important; }
+}

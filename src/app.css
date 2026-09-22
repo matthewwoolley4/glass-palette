@@ -1,0 +1,299 @@
+/* Glass Palette: the whole app. Everything outside full screen: ground, panels, top bar, library, cards, right panel.
+   One idea throughout: near-black ground lit by the playing song, and every surface is a pane of frosted glass
+   with a warm-white rim. No Spotify green anywhere. */
+
+/* Spotify's own palette, replaced at the root so every stock component inherits it (beats any Marketplace scheme) */
+:root, .encore-dark-theme, .encore-dark-theme .encore-base-set {
+  --spice-text: #f6f1e8;            --spice-rgb-text: 246, 241, 232;
+  --spice-subtext: #a9adb3;         --spice-rgb-subtext: 169, 173, 179;
+  --spice-main: #06080c;            --spice-rgb-main: 6, 8, 12;
+  --spice-main-elevated: #12161c;   --spice-rgb-main-elevated: 18, 22, 28;
+  --spice-highlight: #1a2028;       --spice-rgb-highlight: 26, 32, 40;
+  --spice-highlight-elevated: #222a34; --spice-rgb-highlight-elevated: 34, 42, 52;
+  --spice-sidebar: #06080c;         --spice-rgb-sidebar: 6, 8, 12;
+  --spice-player: #06080c;          --spice-rgb-player: 6, 8, 12;
+  --spice-card: #12161c;            --spice-rgb-card: 18, 22, 28;
+  --spice-shadow: #000000;          --spice-rgb-shadow: 0, 0, 0;
+  --spice-selected-row: #f6f1e8;    --spice-rgb-selected-row: 246, 241, 232;
+  --spice-button: #f6f1e8;          --spice-rgb-button: 246, 241, 232;
+  --spice-button-active: #ffffff;   --spice-rgb-button-active: 255, 255, 255;
+  --spice-button-disabled: #535a63; --spice-rgb-button-disabled: 83, 90, 99;
+  --spice-tab-active: #1a2028;      --spice-rgb-tab-active: 26, 32, 40;
+  --spice-notification: #12161c;    --spice-rgb-notification: 18, 22, 28;
+  --spice-misc: #7f8790;            --spice-rgb-misc: 127, 135, 144;
+  --text-base: #f6f1e8;
+  --text-subdued: #a9adb3;
+  --text-bright-accent: #f6f1e8;
+  --essential-bright-accent: #f6f1e8;
+  --background-base: #06080c;
+  --background-elevated-base: rgb(22 26 33 / 0.96);        /* popovers, menus and dialogs stand on these: they must be solid
+  --background-elevated-highlight: rgb(34 40 49 / 0.97) !important;      (5% white here left "Add to playlist" floating see-through, 2026-09-21) */
+  --background-elevated-press: rgb(14 17 22);
+  --background-tinted-base: rgb(255 255 255 / 0.07);
+  --background-tinted-highlight: rgb(255 255 255 / 0.11);
+}
+
+/* ground: the song's colour pools softly behind the glass, so the panes have something to frost */
+.Root__top-container {
+  background:
+    radial-gradient(50% 60% at 78% 8%, rgb(from var(--gs) r g b / 0.30), transparent 70%),
+    radial-gradient(46% 56% at 12% 96%, rgb(from var(--gs2) r g b / 0.28), transparent 70%),
+    radial-gradient(60% 30% at 50% 100%, rgb(from var(--gs) r g b / 0.22), transparent 70%),
+    radial-gradient(40% 40% at 50% 50%, rgb(from var(--gs) r g b / 0.10), transparent 75%),
+    var(--ink) !important;
+}
+
+/* the panes */
+.Root__nav-bar, .Root__main-view, .Root__right-sidebar aside, .Root__right-sidebar .main-buddyFeed-container,
+.Root__right-sidebar-peek, .Root__right-sidebar > div:first-child {   /* newer builds wrap the panel in a "peek" div painted black: it is the pane now */
+  background: linear-gradient(180deg, rgb(19 24 31 / 0.82) 0%, rgb(10 14 20 / 0.78) 100%) !important;
+  border: 1px solid rgb(from var(--rim) r g b / 0.13) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(255 255 255 / 0.018), 0 14px 36px rgb(0 0 0 / 0.36);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: hidden;
+}
+.main-yourLibraryX-entryPoints, .main-yourLibraryX-libraryContainer, .main-view-container, .main-nowPlayingView-container,
+.main-nowPlayingView-mainContainer, .main-yourLibraryX-libraryItemContainer { background: transparent !important; }
+.Root__globalNav, .Root__globalNav > div, .Root__globalNav > div > div, .main-globalNav-searchSection, .main-globalNav-historyButtons, .main-globalNav-navLinks,
+.main-globalNav-searchContainer, .main-topBar-container { background: transparent !important; box-shadow: none; }   /* no black slab behind the top bar */
+.Root__right-sidebar-overlayWrapper, .Root__right-sidebar-peekContent, .main-nowPlayingView-container, .Root__right-sidebar-peek > div { background: transparent !important; }
+/* The panel's header strip has no artwork behind it, so it showed the pane's near-black fill and read as a black
+   box sitting on the coloured ground ("why black up here?"). Let the song's colour wash down
+   through the top of the pane, the same way it does behind the main view. */
+.Root__right-sidebar-peek {
+  border-radius: 20px !important;
+  background-image:
+    radial-gradient(130% 48% at 50% 0%, rgb(from var(--gs) r g b / 0.26), transparent 72%),
+    linear-gradient(180deg, rgb(19 24 31 / 0.82) 0%, rgb(10 14 20 / 0.78) 100%);
+}
+
+/* tooltips: a small pane of glass, not a bare grey slab */
+[data-tippy-root] > div, [role="tooltip"], .encore-tooltip, [class*="tippy-box" i] {
+  background: rgb(16 20 26 / 0.94) !important; border: 1px solid rgb(from var(--rim) r g b / 0.16) !important;
+  border-radius: 12px !important; color: var(--rim) !important; font-size: 12px; line-height: 1.45;
+  box-shadow: 0 16px 44px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.10);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+          backdrop-filter: blur(22px) saturate(140%);
+}
+[data-tippy-root] [class*="arrow" i], [class*="tippy-arrow" i] { display: none; }
+/* Current Spotify builds nest the real <aside> inside the framed peek pane. Paint only the outer pane so the right
+   edge stays one clean hairline instead of two stacked borders and two translucent fills. */
+.Root__right-sidebar-peek .Root__right-sidebar-peekContent aside {
+  background: transparent !important; border: 0 !important; border-radius: inherit !important;
+  box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+
+/* the top bar: search and the round buttons are beads and a pill of glass */
+.Root__globalNav button, .main-globalNav-searchInputContainer, .main-topBar-button {
+  border-radius: 999px !important;
+}
+.main-globalNav-searchInputContainer input, [data-testid="search-input"], .main-globalNav-searchSection form {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04)) !important;
+  border-radius: 999px !important; color: var(--rim) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14);
+}
+.Root__globalNav .main-globalNav-historyButtons button, .Root__globalNav [data-testid="home-button"], .Root__globalNav .main-globalNav-link-icon {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.03)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.12);
+}
+
+/* headers that Spotify tints with a flat colour: let the glass and the ground do the work */
+.main-entityHeader-backgroundColor, .main-actionBarBackground-background, .main-home-homeHeader, .main-entityHeader-overlay,
+.main-topBar-overlay { background: transparent !important; background-image: none; }
+/* the sticky header that slides in as you scroll a playlist is NOT decoration: without a fill its title and play
+   button sit straight on top of the track rows. It gets glass, like every other floating pane. */
+.main-topBar-background {
+  background: linear-gradient(180deg, rgb(13 17 23 / 0.93), rgb(13 17 23 / 0.86)) !important; background-image: linear-gradient(180deg, rgb(13 17 23 / 0.93), rgb(13 17 23 / 0.86));
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+          backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 -1px 0 rgb(from var(--rim) r g b / 0.10);
+}
+.main-entityHeader-container { background: linear-gradient(180deg, rgb(from var(--gs) r g b / 0.20), transparent) !important; }
+
+/* ---- Encore's filled buttons and switches: keep the ink in them ----
+   Encore paints a filled button from --text-base and writes its label in the SAME token, trusting Spotify's own
+   "over media" set to flip it. The theme's warm white broke that trust: "Add", "Mix", "Name & details" and the big
+   play triangle all came out white on white. Put the ground colour back in the
+   label and the glyph. */
+[class*="button-primary__inner"], [class*="button-primary__inner"] *,
+[class*="ButtonPrimary"] > span, [class*="ButtonPrimary"] > span * {
+  color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important;
+}
+[class*="button-primary__inner"] svg, [class*="ButtonPrimary"] > span svg { fill: var(--ink) !important; color: var(--ink) !important; }
+
+/* the same collision on every settings switch: an "on" switch was a warm-white track carrying a warm-white knob,
+   so the whole control read as one blank pill. On: white track, ink knob, lit by the song. Off: Spotify's grey. */
+label:has(> input[type="checkbox"]) > span {
+  box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.20);
+  transition: background 0.16s ease-out, box-shadow 0.16s ease-out !important;
+}
+label:has(> input[type="checkbox"]:checked) > span {
+  background: var(--rim) !important;
+  box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.35), 0 0 0 3px rgb(from var(--gs) r g b / 0.16);
+}
+label:has(> input[type="checkbox"]:checked) > span > span { background: var(--ink) !important; }
+
+/* cards, rows, chips */
+.main-card-card, .main-heroCard-card, [data-testid="top-result-card"] {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02)) !important;
+  border-radius: 18px !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.08);
+  transition: background 0.16s ease-out, transform 0.16s ease-out, box-shadow 0.16s ease-out !important;
+}
+.main-card-card:hover, .main-heroCard-card:hover {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.11), rgb(255 255 255 / 0.04)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.18);
+}
+.main-card-card img, .main-cardImage-image, .main-entityHeader-image, .main-image-image { border-radius: 12px !important; }
+.main-trackList-trackListRow { border-radius: 12px !important; transition: background 0.14s ease-out !important; }
+.main-trackList-trackListRow:hover, .main-trackList-trackListRow.main-trackList-selected { background: rgb(255 255 255 / 0.08) !important; }
+.main-trackList-rowTitle.main-trackList-rowTitle, .main-trackList-active .main-trackList-rowTitle { color: var(--rim) !important; }
+.main-trackList-playingIcon { filter: grayscale(1) brightness(2.2); }
+[role="tablist"] button, .ChipInnerComponent, [class*="Chip__"] { border-radius: 999px !important; }
+
+/* right panel (Now Playing): warm white type, framed artwork, glass sections */
+/* The panel's context line is Spotify's own two-part string run together ("Charlie Jeer Popular"). At body size it
+   reads as a sentence with a word missing; as an eyebrow it reads as what it is, a label. */
+.main-nowPlayingView-headerText {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgb(from var(--rim) r g b / 0.55) !important;
+}
+.main-nowPlayingView-headerText, .main-nowPlayingView-sectionHeaderText, .main-nowPlayingView-sectionHeaderText *,
+.main-nowPlayingView-panel a, .main-nowPlayingView-panel h1, .main-nowPlayingView-panel h2 { color: var(--rim) !important; }
+.main-nowPlayingView-panel .main-trackInfo-artists, .main-nowPlayingView-panel .main-trackInfo-artists a { color: var(--spice-subtext) !important; }
+/* a long title was running under the panel's own like and share beads and being cut mid-word; it ends in an
+   ellipsis instead, and keeps its hands off the beads' corner */
+.main-nowPlayingView-trackInfo .main-trackInfo-name, .main-nowPlayingView-trackInfo .main-trackInfo-name > *,
+.main-nowPlayingView-trackInfo .main-trackInfo-overlay, .main-nowPlayingView-trackInfo .main-trackInfo-artists {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+}
+.main-nowPlayingView-trackInfo { min-width: 0 !important; overflow: hidden; }
+.main-nowPlayingView-coverArtContainer .cover-art, .main-nowPlayingView-coverArt {
+  border-radius: 20px !important; overflow: hidden;
+  box-shadow: 0 0 0 1.5px rgb(from var(--rim) r g b / 0.55), 0 0 0 8px rgb(255 255 255 / 0.06), 0 30px 70px rgb(0 0 0 / 0.55), 0 0 90px rgb(from var(--gs) r g b / 0.28);
+}
+
+/* ---- a cover with no picture in it ("why is it black overlapping glass ... it should be
+   transparent bg or something") ----
+   Donda's cover is a black square, every pixel rgb(3, 3, 3). A frame and a drop shadow around a dead-black fill
+   does not read as artwork on a dark panel, it reads as a hole punched through the glass, and no rim is bright
+   enough to fix that because the problem is the fill. So the square stops pretending to be a photograph and
+   becomes what the rest of the theme is made of: the song's colour pooled behind it, the art laid over that as
+   glass rather than paint, and the rim lit in the song's colour so the edge is the brightest thing about it.
+   `runtime.js` only sets the class when the cover is both dark and uniform, so nothing with a picture in it is
+   ever treated this way. */
+html.office-glass-flatart .main-nowPlayingView-coverArtContainer .cover-art,
+html.office-glass-flatart .main-nowPlayingView-coverArt,
+html.office-glass-flatart .main-nowPlayingWidget-coverArtContainer .cover-art { position: relative; isolation: isolate; }
+html.office-glass-flatart .main-nowPlayingView-coverArtContainer .cover-art::before,
+html.office-glass-flatart .main-nowPlayingView-coverArt::before,
+html.office-glass-flatart .main-nowPlayingWidget-coverArtContainer .cover-art::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none;
+  background:
+    radial-gradient(120% 100% at 28% 0%, rgb(from var(--gs) r g b / 0.40), transparent 64%),
+    radial-gradient(130% 110% at 88% 100%, rgb(from var(--gs2) r g b / 0.34), transparent 68%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.10), rgb(255 255 255 / 0.015));
+}
+html.office-glass-flatart .main-nowPlayingView-coverArtContainer .cover-art img,
+html.office-glass-flatart .main-nowPlayingView-coverArt img,
+html.office-glass-flatart .main-nowPlayingWidget-coverArtContainer .cover-art img { position: relative; z-index: 1; opacity: 0.55; }
+/* Spotify parks a placeholder music note inside every .cover-art, normally hidden behind the opaque image. The
+   moment the art becomes glass it shows through, and a grey note in the middle of the square is exactly the
+   "missing image" reading this whole rule exists to remove. */
+html.office-glass-flatart .cover-art-icon { display: none; }
+html.office-glass-flatart .main-nowPlayingView-coverArtContainer .cover-art,
+html.office-glass-flatart .main-nowPlayingView-coverArt {
+  box-shadow: 0 0 0 1.5px rgb(from var(--gs) r g b / 0.60), 0 0 0 8px rgb(255 255 255 / 0.05), 0 30px 70px rgb(0 0 0 / 0.55), 0 0 110px rgb(from var(--gs) r g b / 0.34);
+}
+.main-nowPlayingView-section, .main-nowPlayingView-aboutArtistV2, .main-nowPlayingView-nextInQueue {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.025)) !important; border-radius: 18px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.08);
+}
+.main-nowPlayingView-panel svg, .main-nowPlayingView-panel path { color: var(--rim); }
+
+/* a song change or a jump backward snaps the progress fill instead of gliding it (src/touch.js decides when) */
+html.office-glass-snap .x-progressBar-fillColor, html.office-glass-snap .progress-bar__slider,
+html.office-glass-snap #office-glass-progress u { transition: none !important; }
+
+/* scrollbars: a sliver of glass */
+.os-scrollbar-handle { background: rgb(from var(--rim) r g b / 0.22) !important; border-radius: 8px !important; }
+.os-scrollbar-handle:hover { background: rgb(from var(--rim) r g b / 0.40) !important; }
+
+/* menus and dialogs */
+.main-contextMenu-menu, [data-testid="context-menu"], .main-embedWidgetGenerator-container, [role="dialog"] > div {
+  background: rgb(16 20 26 / 0.78) !important; backdrop-filter: blur(30px) saturate(150%); border-radius: 18px !important;
+  border: 1px solid rgb(from var(--rim) r g b / 0.18) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 30px 80px rgb(0 0 0 / 0.6);
+}
+.main-contextMenu-menuItemButton { border-radius: 10px !important; }
+
+/* motion: Spotify's own press and hover timing stays. A blanket 250 ms transition on every button and link made
+   each click answer late and read as broken; the theme animates only what it draws itself. */
+
+/* playlist, album and artist pages: Spotify lays a flat colour block (inline background-color on an empty div)
+   behind the header and the action row. Keep the page's own colour as identity, but as a soft wash in the glass. */
+.main-entityHeader-container > div[style*="background-color"], .main-entityHeader-container ~ div[style*="background-color"],
+.main-view-container__scroll-node-child div[style*="background-color: rgb"]:empty { opacity: 0.26 !important; }
+
+/* popovers that Spotify portals to <body> (Add to playlist, sort, Connect): a pane of glass, not a bare form */
+body > div[style*="z-index: 9999"][style*="position: absolute"] > div > form,
+body > div[style*="z-index: 9999"][style*="position: absolute"] > div > div:not(.tippy-content):not([class*="tippy"]) {
+  background: rgb(16 20 26 / 0.88) !important; backdrop-filter: blur(30px) saturate(150%); border-radius: 18px !important;
+  border: 1px solid rgb(from var(--rim) r g b / 0.18) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 30px 80px rgb(0 0 0 / 0.6);
+}
+
+/* ---- "About the artist" in the right panel ("the artist tab isn't ideal") ----
+   Spotify gives it a small square thumbnail on a flat card. The theme already fetches the artist's own editorial
+   photograph for the full-screen stage, so the card gets it as a banner, the thumbnail becomes a round portrait,
+   and the whole thing reads as a card about a person instead of a list item. The runtime tags the card because
+   Spotify's own class names here are hashed and change with every build. */
+.og-about { position: relative; overflow: hidden; border-radius: 18px !important; isolation: isolate; }
+.og-about::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 150px; z-index: -1;
+  background-image: var(--og-scene, none); background-size: cover; background-position: center 22%;
+  opacity: 0.28; filter: saturate(1.05) brightness(0.78);
+  -webkit-mask-image: linear-gradient(180deg, #000 22%, rgb(0 0 0 / 0.45) 62%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 22%, rgb(0 0 0 / 0.45) 62%, transparent 100%);
+  transition: opacity 1.2s ease, background-image 0s;
+}
+.og-about .og-about-face, .og-about .og-about-face > div, .og-about .og-about-face img {
+  width: 76px !important; height: 76px !important; border-radius: 50% !important;
+}
+.og-about .og-about-face img {
+  box-shadow: 0 0 0 2px rgb(from var(--rim) r g b / 0.45), 0 0 0 7px rgb(255 255 255 / 0.06), 0 10px 24px rgb(0 0 0 / 0.55);
+}
+.og-about .main-nowPlayingView-sectionHeaderText, .og-about .main-nowPlayingView-sectionHeaderText * {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgb(from var(--rim) r g b / 0.62) !important;
+}
+
+/* The artist hero wants a scrim so a large name survives a bright photograph, but it must not cost the header its
+   layout. An earlier attempt gave every child `position: relative`, which turned Spotify's absolutely positioned
+   background div into a real flex item and shoved the artwork and title into the middle of the header
+   ("ew the alignment"). The scrim goes on the empty background div instead, which already sits behind
+   everything and takes no space. */
+.main-entityHeader-backgroundColor::after, .main-entityHeader-overlay::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 38%, rgb(4 6 9 / 0.50) 72%, rgb(4 6 9 / 0.85));
+}
+
+/* right-panel sections clip their own artwork (the About the artist photo was spilling past the glass) */
+.main-nowPlayingView-section, .main-nowPlayingView-aboutArtistV2, .main-nowPlayingView-nextInQueue, .main-nowPlayingView-credits { overflow: hidden; }
+.main-nowPlayingView-aboutArtistV2 img, .main-nowPlayingView-section img { border-radius: 14px !important; max-width: 100%; }
+
+/* ---- the Canvas video in the Now Playing panel ("make the video preview cleaner") ----
+   Spotify hangs the looping video off the artwork container at full panel size, square-cornered and hard-cut at the
+   bottom. Give it the same glass frame as the artwork and let its foot dissolve into the panel. */
+.main-nowPlayingView-canvasVisualEnhancement, .canvasVideoContainerNPV {
+  border-radius: 20px !important; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 68%, rgb(0 0 0 / 0.55) 84%, transparent 100%);
+          mask-image: linear-gradient(180deg, #000 68%, rgb(0 0 0 / 0.55) 84%, transparent 100%);
+}
+.main-nowPlayingView-canvasVisualEnhancement video, .canvasVideoContainerNPV video {
+  border-radius: 20px !important; object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(from var(--rim) r g b / 0.28), 0 24px 60px rgb(0 0 0 / 0.5);
+}
+/* Spotify hides the still artwork while a Canvas video plays and does not always bring it back when the video
+   stops, which leaves a black square in the panel. The artwork stays visible; the video simply covers it. */
+.main-nowPlayingView-coverArt, .main-nowPlayingView-coverArtContainer .cover-art { visibility: visible; }
+.main-nowPlayingView-coverArtContainer:has(video) .main-nowPlayingView-coverArt { box-shadow: none; }

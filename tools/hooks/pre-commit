@@ -1,0 +1,4 @@
+#!/bin/sh
+# Glass Palette pre-commit: refuse any commit that carries a secret, a private address or one of your own terms.
+# Enable once per clone:  git config core.hooksPath tools/hooks
+exec python tools/leakcheck.py --staged
