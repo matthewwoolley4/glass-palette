@@ -1,0 +1,88 @@
+name: install-test
+
+# A clean machine, the exact one-line install from the README, then proof it worked.
+#
+# Every check we run on our own machines starts from a machine that already has Spicetify, so it cannot catch what
+# a first-time user hits. This starts from a fresh GitHub runner that has never seen Spotify, Spicetify or this theme,
+# installs Spotify the way a person would, runs the README's one-liner unchanged, and then checks three things:
+#   1. the theme files are where Spicetify looks for them,
+#   2. Spicetify's config says Glass Palette,
+#   3. the theme is actually patched into Spotify's app (its theme.js and user.css are inside xpui).
+# It runs by hand, on every release tag, and weekly, because Spotify and Spicetify both update on their own schedule
+# and either can break an install that worked last week.
+#
+# Windows is not here yet: GitHub's Windows runners run as administrator, and both the Spotify installer and
+# Spicetify refuse to run as administrator, so a Windows job would test the runner, not the install.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+  schedule:
+    - cron: "17 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Install Spotify, the way a person would
+        run: brew install --cask spotify
+
+      # Spicetify reads Spotify's prefs file, which Spotify only writes on its first launch.
+      - name: Open Spotify once so it writes its prefs
+        run: |
+          open -a Spotify
+          for i in $(seq 1 60); do [ -f "$HOME/Library/Application Support/Spotify/prefs" ] && break; sleep 2; done
+          sleep 5; pkill -x Spotify || true; sleep 3
+          ls -la "$HOME/Library/Application Support/Spotify/" | head
+
+      - name: Run the README one-liner, unchanged
+        run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install-remote.sh" | sh
+
+      - name: Check it installed
+        run: |
+          export PATH="$HOME/.spicetify:$PATH"
+          T="$(spicetify path userdata)/Themes/GlassPalette"
+          ls -la "$T"
+          for f in user.css theme.js color.ini; do test -s "$T/$f" || { echo "missing $f"; exit 1; }; done
+          spicetify config current_theme | tee /dev/stderr | grep -qx GlassPalette
+          X="/Applications/Spotify.app/Contents/Resources/Apps/xpui"
+          grep -l "office-glass" "$X/extensions/theme.js" "$X/user.css"
+          echo "PASS: Glass Palette is patched into Spotify"
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Install Spotify from Spotify's own apt repository
+        run: |
+          curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/spotify.gpg
+          echo "deb https://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq spotify-client xvfb
+          # Spicetify has to write inside Spotify's folder; its docs say to grant that once like this
+          sudo chmod a+wr /usr/share/spotify && sudo chmod a+wr -R /usr/share/spotify/Apps
+
+      - name: Open Spotify once so it writes its prefs
+        run: |
+          (xvfb-run -a spotify --no-zygote >/dev/null 2>&1 &)
+          for i in $(seq 1 60); do [ -f "$HOME/.config/spotify/prefs" ] && break; sleep 2; done
+          sleep 5; pkill -f /usr/share/spotify/spotify || true; sleep 3
+          ls -la "$HOME/.config/spotify/" | head
+
+      - name: Run the README one-liner, unchanged
+        run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install-remote.sh" | sh
+
+      - name: Check it installed
+        run: |
+          export PATH="$HOME/.spicetify:$PATH"
+          T="$(spicetify path userdata)/Themes/GlassPalette"
+          ls -la "$T"
+          for f in user.css theme.js color.ini; do test -s "$T/$f" || { echo "missing $f"; exit 1; }; done
+          spicetify config current_theme | tee /dev/stderr | grep -qx GlassPalette
+          X="/usr/share/spotify/Apps/xpui"
+          grep -l "office-glass" "$X/extensions/theme.js" "$X/user.css"
+          echo "PASS: Glass Palette is patched into Spotify"
