@@ -34,13 +34,16 @@ jobs:
 
       # Spicetify reads Spotify's prefs file, which Spotify only writes on its first launch.
       - name: Open Spotify once so it writes its prefs
+        timeout-minutes: 5
         run: |
-          open /Applications/Spotify.app   # by path: a fresh install is not registered by name yet
+          # the binary itself, in the background: `open` can hang on a brand-new Mac waiting on first-launch checks
+          (/Applications/Spotify.app/Contents/MacOS/Spotify >/dev/null 2>&1 &)
           for i in $(seq 1 60); do [ -f "$HOME/Library/Application Support/Spotify/prefs" ] && break; sleep 2; done
           sleep 5; pkill -x Spotify || true; sleep 3
           ls -la "$HOME/Library/Application Support/Spotify/" | head
 
       - name: Run the README one-liner, unchanged
+        timeout-minutes: 10
         run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install-remote.sh" | sh
 
       - name: Check it installed
@@ -77,6 +80,7 @@ jobs:
           sudo chmod a+wr /usr/share/spotify && sudo chmod a+wr -R /usr/share/spotify/Apps
 
       - name: Open Spotify once so it writes its prefs
+        timeout-minutes: 5
         run: |
           (xvfb-run -a spotify --no-zygote >/dev/null 2>&1 &)
           for i in $(seq 1 60); do [ -f "$HOME/.config/spotify/prefs" ] && break; sleep 2; done
@@ -84,6 +88,7 @@ jobs:
           ls -la "$HOME/.config/spotify/" | head
 
       - name: Run the README one-liner, unchanged
+        timeout-minutes: 10
         run: curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install-remote.sh" | sh
 
       - name: Check it installed

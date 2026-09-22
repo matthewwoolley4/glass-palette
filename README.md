@@ -284,6 +284,8 @@ answering.
 | `tools/check.js`, `tools/render_wall.py` | Health check over the debug port; renders our own stage image |
 | `tools/verify.py` | Rebuilds from `src/` and proves the committed `dist/` matches it byte for byte |
 | `tools/leakcheck.py` | Fails on API keys, tokens, private addresses, home paths, emails or image metadata in any tracked file |
+| `tools/compat.py` | After a Spotify update, lists any of the theme's hooks into Spotify that the update removed |
+| `tools/release.py` | Pins the installers and the Marketplace manifest to one tagged release |
 | `extras/chroma-bridge/` | The Razer Chroma bridge |
 | `manifest.json` | Spicetify Marketplace listing |
 
@@ -319,9 +321,32 @@ single size setting.
 
 ## Releasing
 
-`python build.py --public` builds `dist/GlassPalette/` with our own rendered stage image (`tools/render_wall.py`);
-that folder is committed so the Spicetify Marketplace (`manifest.json`) can serve it. A personal `assets/wall-raw.webp`
-is used by the plain build if present and never committed.
+`main` is where work happens; a tag is what people get. The one-line installers download a tagged release, and the
+Marketplace manifest points user.css, color.ini and theme.js at that tag on jsdelivr, so a push to `main` reaches
+nobody until a release is cut:
+
+```
+python tools/release.py v1.2.0
+```
+
+That sets the version in `manifest.json` and both one-line installers, rebuilds `dist/` with `--public`, and prints the
+commit, tag and push commands; it never pushes by itself. Tags are never moved: a fix is the next version.
+`python build.py --public` builds with our own rendered stage image (`tools/render_wall.py`); a personal
+`assets/wall-raw.webp` is used by the plain build if present and is never committed.
+
+## When Spotify updates
+
+Spotify updates on its own, and an update can undo Spicetify or rename the parts of the app the theme styles. Three
+things watch for that:
+
+- **The install itself**, weekly and on every release: `.github/workflows/install-test.yml` takes clean macOS and Linux
+  machines, installs Spotify, runs the one-liner unchanged and checks the theme is patched in. Each run records the
+  Spotify and Spicetify versions it passed on.
+- **The theme's hooks into Spotify**: `python tools/compat.py` checks every Spotify class name, test id and CSS
+  variable the theme styles against Spotify's own app files, and names any that an update removed. Take a baseline
+  on a day it looks right (`--baseline`); after that it only fails when something that worked has gone.
+- **If Spotify updated and the theme is off**, run the one-line install again. It re-applies Spicetify and repairs
+  the "backup is older than Spotify" error an update leaves behind.
 
 ## Licence
 

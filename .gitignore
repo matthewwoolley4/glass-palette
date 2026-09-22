@@ -8,3 +8,4 @@ Thumbs.db
 assets/wall-raw.webp
 assets/*-preview.png
 .leakcheck.local
+tools/compat-baseline.json
