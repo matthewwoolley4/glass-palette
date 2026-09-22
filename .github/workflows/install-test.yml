@@ -35,7 +35,7 @@ jobs:
       # Spicetify reads Spotify's prefs file, which Spotify only writes on its first launch.
       - name: Open Spotify once so it writes its prefs
         run: |
-          open -a Spotify
+          open /Applications/Spotify.app   # by path: a fresh install is not registered by name yet
           for i in $(seq 1 60); do [ -f "$HOME/Library/Application Support/Spotify/prefs" ] && break; sleep 2; done
           sleep 5; pkill -x Spotify || true; sleep 3
           ls -la "$HOME/Library/Application Support/Spotify/" | head
@@ -54,13 +54,23 @@ jobs:
           grep -l "office-glass" "$X/extensions/theme.js" "$X/user.css"
           echo "PASS: Glass Palette is patched into Spotify"
 
+      # Which versions this passed (or failed) on, so a break can be pinned to the update that caused it.
+      - name: Record versions
+        if: always()
+        run: |
+          export PATH="$HOME/.spicetify:$PATH"
+          { echo "### macOS"; echo "- macOS $(sw_vers -productVersion)";
+            echo "- Spotify $(defaults read /Applications/Spotify.app/Contents/Info.plist CFBundleShortVersionString 2>/dev/null || echo 'not installed')";
+            echo "- Spicetify $(spicetify -v 2>/dev/null || echo 'not installed')"; } >> "$GITHUB_STEP_SUMMARY"
+
   linux:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Install Spotify from Spotify's own apt repository
         run: |
-          curl -sS https://download.spotify.com/debian/pubkey_C85668DF69375001.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/spotify.gpg
+          # Spotify rotates this signing key now and then; when apt says NO_PUBKEY, take the new id from the error
+          curl -sS https://download.spotify.com/debian/pubkey_5384CE82BA52C83A.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/spotify.gpg
           echo "deb https://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
           sudo apt-get update -qq && sudo apt-get install -y -qq spotify-client xvfb
           # Spicetify has to write inside Spotify's folder; its docs say to grant that once like this
@@ -86,3 +96,11 @@ jobs:
           X="/usr/share/spotify/Apps/xpui"
           grep -l "office-glass" "$X/extensions/theme.js" "$X/user.css"
           echo "PASS: Glass Palette is patched into Spotify"
+
+      - name: Record versions
+        if: always()
+        run: |
+          export PATH="$HOME/.spicetify:$PATH"
+          { echo "### Linux"; echo "- $(. /etc/os-release; echo "$PRETTY_NAME")";
+            echo "- Spotify $(dpkg-query -W -f='${Version}' spotify-client 2>/dev/null || echo 'not installed')";
+            echo "- Spicetify $(spicetify -v 2>/dev/null || echo 'not installed')"; } >> "$GITHUB_STEP_SUMMARY"
