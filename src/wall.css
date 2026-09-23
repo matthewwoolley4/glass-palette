@@ -4,15 +4,20 @@
 #office-glass-capsules { display: none; }
 #office-glass-wall {
   position: absolute; left: 50%; top: var(--og-mid, 460px); z-index: 0; pointer-events: none;
-  width: min(1640px, 96vw); aspect-ratio: 1800 / 928; transform: translate(-50%, -50%) scale(var(--og-swell, 1));
+  width: min(1640px, 96vw); aspect-ratio: 1800 / 928; translate: -50% -50%;   /* `scale` is the beat: runtime.js animates it */
   background: var(--og-wall) center / contain no-repeat;
   filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
   transition: filter 1.4s ease, top 0.5s ease, opacity 1.2s ease, width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  will-change: transform, scale;
   /* the image's border feathers into the stage so its rectangle can never read as a panel ("you can see the edges") */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent), linear-gradient(180deg, transparent, #000 50px, #000 calc(100% - 50px), transparent);
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
+/* painted once per colour (runtime.js bakeWall): the layer itself carries no filter, mask or picture, so scaling it
+   on the beat costs the graphics card next to nothing. Two canvases cross-fade when the song's colour changes. */
+#office-glass-wall.og-baked { background: none; filter: none; -webkit-mask-image: none; mask-image: none; }
+#office-glass-wall > canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 1.4s ease; }
+#office-glass-wall > canvas.on { opacity: 1; }
 /* the dock away (Spotify's idle while playing, ours while paused): the glass grows into the room it left */
 html.office-glass-idle #office-glass-wall { width: min(1880px, 104vw); }
 html.office-glass-paused #office-glass-wall { opacity: 0.8; }

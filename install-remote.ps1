@@ -13,7 +13,7 @@ if (-not (Get-Command spicetify -ErrorAction SilentlyContinue)) {
   if (-not (Get-Command spicetify -ErrorAction SilentlyContinue)) { throw "Spicetify did not install. See https://spicetify.app/docs/getting-started" }
 }
 # The release this installs. tools/release.py sets it; main is where work happens, a tag is what people get.
-$version = "v1.1.2"
+$version = "v1.1.3"
 $dir = Join-Path $env:LOCALAPPDATA "GlassPalette"
 $zip = Join-Path $env:TEMP "glass-palette.zip"
 Invoke-WebRequest -UseBasicParsing "https://github.com/matthewwoolley4/glass-palette/archive/refs/tags/$version.zip" -OutFile $zip

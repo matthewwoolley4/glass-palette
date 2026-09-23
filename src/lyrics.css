@@ -17,7 +17,7 @@
   --lyrics-color-passed: rgb(246 241 232 / 0.26) !important;
   --lyrics-color-messaging: rgb(246 241 232 / 0.6) !important;
 }
-.main-view-container:has([style*="--lyrics-color-active"]) {
+html.og-lyrics-on .main-view-container {
   background:
     radial-gradient(70% 50% at 36% 50%, rgb(from var(--gs) r g b / 0.26), transparent 72%),
     radial-gradient(40% 40% at 94% 8%, rgb(from var(--gs2) r g b / 0.20), transparent 70%) !important;
@@ -55,8 +55,8 @@
 /* ---- v4 ("lyric mode could be WAY more beautiful") ----
    The page is the stage: the wallpaper's glass, tinted to the song, sits faint behind the words; the words are
    centred, larger and airier; waiting lines are soft frosted white (no hollow outline), the sung line is lit. */
-.main-view-container:has([style*="--lyrics-color-active"]) { position: relative; isolation: isolate; }
-.main-view-container:has([style*="--lyrics-color-active"])::before {
+html.og-lyrics-on .main-view-container { position: relative; isolation: isolate; }
+html.og-lyrics-on .main-view-container::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: var(--og-wall) center 40% / 108% auto no-repeat;    /* wider than the pane: its edges fall outside, no shape shows */
   opacity: 0.26; filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
@@ -66,7 +66,7 @@
 [style*="--lyrics-color-active"] > div > div { width: min(1240px, calc(100% - clamp(32px, 8vw, 160px))) !important; margin-inline: auto !important; }
 /* the wallpaper behind the words is a photograph stretched over a whole pane; at 26% on a near-black ground its
    own gradients band. A fine grain over the top dithers the steps away, the same trick the full-screen stage uses. */
-.main-view-container:has([style*="--lyrics-color-active"])::after {
+html.og-lyrics-on .main-view-container::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.05;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
@@ -116,11 +116,10 @@
   35%  { filter: drop-shadow(0 0 16px rgb(from var(--gs) r g b / 0.85)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5)); }
   100% { filter: drop-shadow(0 0 9px rgb(from var(--gs) r g b / 0.55)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5)); }
 }
-/* The room behind the words moves: the picture drifts in a slow push and pan (about 40 s each way) and breathes
-   with the beat through the same swell the full-screen stage uses. Transform and scale only, so it stays on the
-   compositor and costs nothing per frame. */
-.main-view-container:has([style*="--lyrics-color-active"])::before {
-  scale: var(--og-swell, 1);
+/* The room behind the words moves: the picture drifts in a slow push and pan (about 40 s each way). Transform only,
+   so it stays on the compositor and costs nothing per frame. It does not take the beat swell: this box holds every
+   lyric line, and changing a value on it each frame would restyle all of them (the video below it still breathes). */
+html.og-lyrics-on .main-view-container::before {
   animation: og-lyric-drift 40s ease-in-out infinite alternate;
 }
 @keyframes og-lyric-drift {
@@ -136,8 +135,7 @@
   opacity: 0.26;       /* no filter: a blur over a playing video cost 3 to 4 ms a frame on the Mini; the 480 px
                           loop stretched over the pane is soft already, and low opacity on the dark ground dims it */
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);
-  scale: var(--og-swell, 1);
-  animation: og-lyric-drift 40s ease-in-out infinite alternate;
+  animation: og-lyric-drift 40s ease-in-out infinite alternate;   /* the beat rides on `scale`, from runtime.js */
   transition: opacity 1.2s ease;
 }
 html.office-glass-paused #og-lyric-canvas { opacity: 0.2; }

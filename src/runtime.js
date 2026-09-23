@@ -168,6 +168,10 @@
     if (box !== lyricsBox) {                                                // a new lyrics page: watch it for line changes
       if (lyricsObs) lyricsObs.disconnect();
       lyricsBox = box; lyricsObs = null;
+      // Mark the page once, on the way in and out, and let the CSS key off the mark. The CSS used to ask
+      // ".main-view-container:has([style*=...lyrics...])", which Chromium must re-check on EVERY inline style change
+      // anywhere in the main view (Spotify makes about 27 a second), restyling some 740 elements each time.
+      document.documentElement.classList.toggle('og-lyrics-on', !!box);
       if (box) { lyricsObs = new MutationObserver(() => labelLyrics()); lyricsObs.observe(box, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true }); }
     }
     if (!box) return;
@@ -288,7 +292,7 @@
     // the artist's photograph, far behind the glass
     if (!document.getElementById('office-glass-scene')) { const sc = document.createElement('div'); sc.id = 'office-glass-scene'; root.insertBefore(sc, root.firstElementChild ? root.firstElementChild.nextSibling : null); }
     // the wallpaper stage behind the artwork
-    if (!document.getElementById('office-glass-wall')) { const w = document.createElement('div'); w.id = 'office-glass-wall'; root.insertBefore(w, document.getElementById('office-glass-capsules')); }
+    if (!document.getElementById('office-glass-wall')) { const w = document.createElement('div'); w.id = 'office-glass-wall'; root.insertBefore(w, document.getElementById('office-glass-capsules')); bakeWall(); }
     // title block: song and artist in proper type under the artwork
     let tb = document.getElementById('office-glass-title');
     if (!tb) { tb = document.createElement('div'); tb.id = 'office-glass-title'; tb.innerHTML = '<b></b><span></span><div class="beads"><em class="q"><svg viewBox="0 0 16 16"><path d="M2 6.200v3.600M5 3.800v8.400M8 1.800v12.400M11 4.400v7.200M14 6.600v2.800" stroke="currentColor" stroke-width="1.700" stroke-linecap="round" fill="none"/></svg>Lossless</em><em class="l"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.200l-1.500-1.300C5.200 15.200 2 12.300 2 8.700 2 5.900 4.200 3.800 7 3.800c1.600 0 3.100.700 4 1.900l1 1.200 1-1.200c.900-1.200 2.400-1.900 4-1.900 2.800 0 5 2.100 5 4.900 0 3.600-3.200 6.500-8.500 11.200L12 21.200z"/></svg>Liked</em><em class="p"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M3.500 2.500h3v11h-3zM9.500 2.500h3v11h-3z"/></svg>Paused</em></div><div id="office-glass-progress"><u></u></div>'; root.appendChild(tb); }
@@ -355,7 +359,44 @@
   // hue and are skipped. Checked against renders at 0, 120 and 280 degrees: within 3 degrees each time.
   // A picture with no clear colour keeps 186, where the old constant put it. The settings panel calls it again when
   // someone picks their own picture; only the newest call may write, so a slow first measurement cannot win late.
-  let wallBase = 186, lastRgb = null, wallCall = 0;
+  let wallBase = 186, lastRgb = null, wallCall = 0, wallImg = null;
+  // ---- the wallpaper, painted once per song ----
+  // The stage breathes by scaling the wallpaper a fraction of a percent every frame. Drawn with a live hue-rotate
+  // filter and a two-gradient edge mask, that one layer made the graphics process redraw a 1640 px filtered, masked
+  // surface 60 times a second. So the tint and the feathered edge are painted ONCE per colour into a plain canvas,
+  // and the swell only scales that canvas, which the GPU does for free. A new colour paints a second canvas and
+  // cross-fades onto it (opacity, also free), then the old one goes. If canvas filters are missing, the CSS
+  // filter and mask stay and nothing changes.
+  const bakeWall = () => {
+    const wall = document.getElementById('office-glass-wall');
+    if (!wall || !wallImg || !wallImg.naturalWidth) return;
+    const st = document.documentElement.style;
+    const hue = st.getPropertyValue('--og-hue').trim() || '0deg', sat = st.getPropertyValue('--og-sat').trim() || '1';
+    const key = hue + '|' + sat + '|' + wallImg.src.length + '|' + wallImg.src.slice(-24);
+    if (wall.dataset.ogBaked === key) return;
+    const W = Math.min(wallImg.naturalWidth, 2000), H = Math.round(W * wallImg.naturalHeight / wallImg.naturalWidth);
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    if (!x || !('filter' in x)) return;
+    x.filter = 'hue-rotate(' + hue + ') saturate(' + sat + ')';
+    x.drawImage(wallImg, 0, 0, W, H);
+    x.filter = 'none';
+    // the same feathered edge the CSS mask drew: 40 px at the sides and 50 px top and bottom of a 1640 px stage
+    const fx = 40 * W / 1640, fy = 50 * H / 846;
+    x.globalCompositeOperation = 'destination-in';
+    let g = x.createLinearGradient(0, 0, W, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(fx / W, '#000'); g.addColorStop(1 - fx / W, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g = x.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(fy / H, '#000'); g.addColorStop(1 - fy / H, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    wall.dataset.ogBaked = key;
+    wall.classList.add('og-baked');
+    const old = [...wall.querySelectorAll('canvas')];
+    wall.appendChild(c);
+    requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('on')));
+    setTimeout(() => old.forEach((o) => o.remove()), old.length ? 1600 : 0);
+  };
   const measureWall = (tries, call = ++wallCall) => {
     const m = /url\(["']?(data:image\/[^"')]+)/.exec(getComputedStyle(document.documentElement).getPropertyValue('--og-wall'));
     if (!m) { if (tries > 0) setTimeout(() => measureWall(tries - 1, call), 1000); return; }   // the stylesheet may not be in yet
@@ -372,6 +413,7 @@
       }
       let peak = 0, best = -1;
       for (let i = 0; i < 36; i++) { const sm = bins[(i + 35) % 36] + bins[i] * 2 + bins[(i + 1) % 36]; if (sm > best) { best = sm; peak = i * 10 + 5; } }
+      wallImg = img;
       if (best < 3) { wallBase = 186; delete document.documentElement.dataset.ogWallHue; if (lastRgb) applyColour(...lastRgb); return; }   // no clear colour: keep 186
       let cx = 0, cy = 0;
       for (const [h, w] of pts) if (Math.abs(((h - peak + 540) % 360) - 180) <= 30) { cx += w * Math.cos(h * Math.PI / 180); cy += w * Math.sin(h * Math.PI / 180); }
@@ -396,6 +438,7 @@
     const de = document.documentElement.style;
     de.setProperty('--og-hue', (Math.round(h * 360) - wallBase) + 'deg');
     de.setProperty('--og-sat', sa < 0.12 ? '0.25' : String(Math.min(1.6, 0.9 + sa * 0.8).toFixed(2)));
+    bakeWall();
     if (sa < 0.12) { de.setProperty('--gs', 'rgb(150 165 175)'); de.setProperty('--gs2', 'rgb(90 110 130)'); return; }   // grey songs: cool silver glass
     de.setProperty('--gs', 'rgb(' + rgb(h, Math.max(0.72, Math.min(0.92, sa + 0.25)), 0.96) + ')');
     de.setProperty('--gs2', 'rgb(' + rgb(h + (h < 0.17 || h > 0.75 ? -0.07 : 0.07), 0.7, 0.7) + ')');
@@ -406,47 +449,48 @@
   const swellDepth = () => { const v = parseFloat(localStorage.getItem('office-glass-swell') || ''); return isNaN(v) ? 0.0045 : v; };   // was 0.012
   // dt is measured from ATTACK seconds BEFORE the beat, so the swell peaks exactly on it instead of just after
   const env = (dt) => { if (dt < 0) return 0; if (dt < ATTACK) { const x = dt / ATTACK; return x * x * (3 - 2 * x); } return Math.exp(-(dt - ATTACK) / TAIL); };
-  let idx = 0, lastId = null, likeWaveAt = 0;
-  const startFrames = () => {
-    if (document.hidden || reducedMotion.matches || window.__officeGlassRaf) return;
-    window.__officeGlassRaf = requestAnimationFrame(frame);
-  };
-  const frame = () => {
-    window.__officeGlassRaf = 0;
-    const row = document.getElementById('office-glass-capsules');
-    if (!row || document.hidden) return;
-    const g = window.__officeBeats;
+  // ---- the swell, run by the graphics card ----
+  // The beat map says when every beat lands, so nothing needs to touch the page between beats. The envelope for the
+  // next few seconds is sampled into keyframes on the `scale` property and handed over as one Web Animation per
+  // element; Chromium runs a `scale` animation on the compositor, off the main thread. (It used to be a
+  // requestAnimationFrame loop writing a style every frame: first on <html>, which restyled the whole app 60 times a
+  // second, then on the two elements alone.) The schedule is rebuilt every few seconds from tick(), and at once on
+  // a seek, a pause, a new song, a new element (the lyrics video) or a like.
+  const WINDOW = 6, SAMPLES = 30;                                    // seconds per schedule, keyframes per second
+  let likeWaveAt = 0, sched = null;
+  const swellTargets = () => [document.getElementById('office-glass-wall'), document.getElementById('og-lyric-canvas')].filter(Boolean);
+  const stopSwell = () => { if (sched) { sched.anims.forEach((a) => a.cancel()); sched = null; } };
+  const startFrames = (force) => {
+    const g = window.__officeBeats, targets = swellTargets();
     let playing = false; try { playing = Spicetify.Player.isPlaying(); } catch (e) {}
-    const caps = row.children;
-    if ((!g || !g.beats || !g.beats.length || !playing) && !likeWaveAt) {
-      for (const c of caps) { c.style.transform = ''; c.firstChild.style.opacity = 0; }
-      return;
-    }
     const gb = g && g.beats && g.beats.length && playing ? g.beats : [];
-    if (g && g.id !== lastId) { lastId = g.id; idx = 0; }
+    if (likeWaveAt && performance.now() - likeWaveAt > 2600) likeWaveAt = 0;
+    if (document.hidden || reducedMotion.matches || !targets.length || (!gb.length && !likeWaveAt)) { stopSwell(); return; }
+    const now = performance.now();
     const offset = (parseInt(localStorage.getItem('office-glass-beat-offset-ms') || '0', 10) || 0) / 1000;
-    const pos = Spicetify.Player.getProgress() / 1000 - offset + ATTACK;
-    if (idx >= gb.length) idx = 0;
-    while (idx < gb.length - 1 && gb[idx + 1].t <= pos + 0.001) idx++;
-    while (idx > 0 && gb[idx].t > pos) idx--;
-    for (let i = 0; i < caps.length; i++) {
-      const dist = Math.abs(i - (caps.length - 1) / 2);          // 0.5, 1.5, 2.5 from the centre
-      const p = pos - dist * RIPPLE;
+    let pos = 0; try { pos = Spicetify.Player.getProgress() / 1000 - offset + ATTACK; } catch (e) {}
+    const id = (g && g.id) + '|' + playing;
+    if (!force && sched && sched.id === id && sched.targets.length === targets.length && sched.targets.every((t, i) => t === targets[i])
+        && now < sched.until - 2000 && Math.abs(sched.pos0 + (now - sched.t0) / 1000 - pos) < 0.12) return;   // still on time
+    stopSwell();
+    const depth = swellDepth(), frames = [];
+    let j = 0; { let lo = 0, hi = gb.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (gb[m].t <= pos) lo = m; else hi = m - 1; } j = lo; }
+    for (let i = 0; i <= WINDOW * SAMPLES; i++) {
+      const dt = i / SAMPLES, p = pos + dt - 0.5 * RIPPLE;
+      while (j < gb.length - 1 && gb[j + 1].t <= p) j++;
       let e = 0;
-      for (let k = idx; k >= 0 && k > idx - 3 && k < gb.length; k--) e = Math.max(e, gb[k].s * env(p - gb[k].t));
-      if (likeWaveAt) {                                                     // a like: one big wave of light, centre outward
-        const w = (performance.now() - likeWaveAt) / 1000 - dist * 0.11;
+      for (let k = j; k >= 0 && k > j - 3 && k < gb.length; k--) e = Math.max(e, gb[k].s * env(p - gb[k].t));
+      if (likeWaveAt) {                                              // a like: one big wave of light
+        const w = (now + dt * 1000 - likeWaveAt) / 1000 - 0.055;
         if (w > 0 && w < 2.0) e = Math.max(e, 1.5 * (w < 0.22 ? (w / 0.22) * (w / 0.22) * (3 - 2 * w / 0.22) : Math.exp(-(w - 0.22) / 0.55)));
-        if (i === caps.length - 1 && w > 2.2) likeWaveAt = 0;
       }
-      caps[i].style.transform = 'scale(' + (1 + 0.010 * e).toFixed(4) + ',' + (1 + 0.022 * e).toFixed(4) + ')';
-      if (i === 2) document.documentElement.style.setProperty('--og-swell', (1 + swellDepth() * e).toFixed(4));
-      caps[i].firstChild.style.opacity = (0.55 * e).toFixed(3);
+      frames.push({ scale: (1 + depth * e).toFixed(4) });
     }
-    startFrames();
+    const anims = targets.map((t) => { const a = t.animate(frames, { duration: WINDOW * 1000, easing: 'linear', fill: 'forwards' }); a.id = 'og-swell'; return a; });
+    sched = { id, t0: now, pos0: pos, until: now + WINDOW * 1000, targets, anims };
   };
-  cancelAnimationFrame(window.__officeGlassRaf);
-  window.__officeGlassRaf = 0;
+  // a re-run of this script (a live reload) cancels the last copy's schedule instead of stacking a second one on it
+  for (const t of swellTargets()) for (const a of t.getAnimations()) if (a.id === 'og-swell') a.cancel();
 
   // ---- the moment you like a song ----
   const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21.2l-1.5-1.3C5.2 15.2 2 12.3 2 8.7 2 5.9 4.2 3.8 7 3.8c1.6 0 3.1.7 4 1.9l1 1.2 1-1.2c.9-1.2 2.400-1.9 4-1.9 2.800 0 5 2.100 5 4.900 0 3.600-3.200 6.500-8.500 11.200L12 21.2z"/></svg>';
@@ -467,7 +511,7 @@
       ], { duration: 1000 + Math.random() * 700, delay: Math.random() * 120, easing: ease, fill: 'both' }));
     }
     likeWaveAt = performance.now();
-    startFrames();
+    startFrames(true);
     const de = document.documentElement; de.classList.remove('office-glass-liked-burst'); void de.offsetWidth; de.classList.add('office-glass-liked-burst');
     clearTimeout(window.__officeGlassBurst); window.__officeGlassBurst = setTimeout(() => de.classList.remove('office-glass-liked-burst'), 1700);
   };

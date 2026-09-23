@@ -310,3 +310,11 @@ html.office-glass-nocanvas.office-glass-fs [style*="--cinema-mode-bg-color-from"
 html.office-glass-nocanvas.office-glass-fs [style*="--cinema-mode-bg-color-from"] [class*="canvasVisual" i] { display: none; }
 html.office-glass-nocanvas.office-glass-fs [style*="--cinema-mode-bg-color-from"] .cover-art,
 html.office-glass-nocanvas.office-glass-fs [style*="--cinema-mode-bg-color-from"] .cover-art img { display: block; visibility: visible; opacity: 1 !important; }
+
+/* Smoked glass on the stage while music plays. A live blur has to be recomputed every frame whenever what is behind
+   it moves, and behind the dock and the pills the wallpaper breathes on every beat: about 9% of a CPU core in the
+   graphics process on the Mini. On the dark stage a deeper tint reads almost the same, so the blur is swapped for
+   one while playing. Paused, and everywhere outside the stage, the real blur is back. */
+html.office-glass-fs:not(.office-glass-paused) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.office-glass-fs:not(.office-glass-paused) aside.main-nowPlayingBar-container,
+html.office-glass-fs:not(.office-glass-paused) div:has(> [aria-label="Media control options"]) { background-color: rgb(12 15 20 / 0.72) !important; }
