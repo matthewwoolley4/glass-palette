@@ -2,6 +2,8 @@
 
 [![verify](https://github.com/matthewwoolley4/glass-palette/actions/workflows/verify.yml/badge.svg)](https://github.com/matthewwoolley4/glass-palette/actions/workflows/verify.yml)
 
+![Three song changes on the full-screen stage: the glass takes on each new song's colour](docs/screens/colour-change.webp)
+
 A Spotify theme built to echo the "Glass Palette" wallpaper: frosted glass capsules holding the playing song's
 colour on a near-black stage, warm-white rims, fine grain. The whole app is glass; the full-screen view is a stage
 that recolours to every song and breathes on the beat; lyrics are letters cut from frosted glass that light up as
