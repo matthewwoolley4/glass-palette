@@ -47,8 +47,9 @@
     if (ev.target.closest && ev.target.closest(KEEP)) return;
     const sc = scrollerFrom(ev.target);
     if (!sc) return;
+    const gliding = !!glideRaf;                                          // a tap on a moving list only catches it
     stopGlide();
-    drag = { sc, id: ev.pointerId, y: ev.clientY, top: sc.scrollTop, moved: 0, lastY: ev.clientY, t: performance.now(), v: 0 };
+    drag = { sc, id: ev.pointerId, y: ev.clientY, top: sc.scrollTop, moved: 0, lastY: ev.clientY, t: performance.now(), v: 0, gliding };
   }, true);
 
   document.addEventListener('pointermove', (ev) => {
@@ -65,10 +66,13 @@
 
   const endDrag = (ev) => {
     if (!drag || (ev.pointerId !== undefined && ev.pointerId !== drag.id)) return;
-    const { sc, v, moved } = drag;
+    const { sc, v, moved, gliding } = drag;
     drag = null;
     setClass('office-glass-dragging', false);
-    if (moved <= 5) return;                                              // that was a tap after all
+    if (moved <= 5) {                                                    // that was a tap after all
+      if (gliding) quietClicksUntil = performance.now() + 350;          // ...but one that stopped a glide: it plays nothing
+      return;
+    }
     quietClicksUntil = performance.now() + 350;                          // a scroll must never also open or play something
     if (performance.now() - 0 && Math.abs(v) > 0.05) glide(sc, v);
   };
@@ -82,9 +86,12 @@
   // is untouched, so ordinary drag and drop still works exactly as Spotify intends.
   document.addEventListener('dragstart', (ev) => { if (on()) ev.preventDefault(); }, true);
 
-  // registered before the tap-to-play handler below, so a drag is swallowed before anything acts on it
+  // registered before the tap-to-play handler below, so a drag is swallowed before anything acts on it. It has to be
+  // stopImmediatePropagation: both handlers sit on document, and plain stopPropagation never stops a listener on the
+  // same node, so the lift at the end of every scroll still reached tap-to-play and started whatever row it landed
+  // on ("the songs auto play on what i finish on when scrolling").
   document.addEventListener('click', (ev) => {
-    if (performance.now() < quietClicksUntil) { ev.stopPropagation(); ev.preventDefault(); }
+    if (performance.now() < quietClicksUntil) { ev.stopImmediatePropagation(); ev.preventDefault(); }
   }, true);
 
   // ---- one tap plays a song ----------------------------------------------------------------------------------

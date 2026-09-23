@@ -297,3 +297,17 @@ body > div[style*="z-index: 9999"][style*="position: absolute"] > div > div:not(
    stops, which leaves a black square in the panel. The artwork stays visible; the video simply covers it. */
 .main-nowPlayingView-coverArt, .main-nowPlayingView-coverArtContainer .cover-art { visibility: visible; }
 .main-nowPlayingView-coverArtContainer:has(video) .main-nowPlayingView-coverArt { box-shadow: none; }
+
+/* Three ways to look at the song, three icons ("the swap between full screen, song in focus and Spotify uses the same
+   icon"). Spotify draws Full screen, "Expand Now Playing view" and "Minimize Now Playing view" all as arrows to or
+   from the corners. Full screen keeps its corners; the song view gets a framed square (the artwork, in focus); the
+   way back gets the app itself (a window with its sidebar). Matched on Spotify's English labels: another language
+   simply keeps Spotify's own arrows. */
+button[aria-label="Expand Now Playing view"], button[aria-label="Minimize Now Playing view"] { position: relative; }
+button[aria-label="Expand Now Playing view"] svg, button[aria-label="Minimize Now Playing view"] svg { visibility: hidden; }
+button[aria-label="Expand Now Playing view"]::after, button[aria-label="Minimize Now Playing view"]::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; translate: -50% -50%; pointer-events: none;
+  background: currentColor; -webkit-mask: var(--og-ico) center / contain no-repeat; mask: var(--og-ico) center / contain no-repeat;
+}
+button[aria-label="Expand Now Playing view"] { --og-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1.25' y='1.25' width='13.5' height='13.5' rx='3' fill='none' stroke='black' stroke-width='1.5'/%3E%3Crect x='4.75' y='4.75' width='6.5' height='6.5' rx='1.4'/%3E%3C/svg%3E"); }
+button[aria-label="Minimize Now Playing view"] { --og-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1.25' y='2.25' width='13.5' height='11.5' rx='2.5' fill='none' stroke='black' stroke-width='1.5'/%3E%3Crect x='3.6' y='4.6' width='3' height='6.8' rx='0.9'/%3E%3C/svg%3E"); }

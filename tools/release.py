@@ -8,6 +8,7 @@ Everything people install from reads this version, and nothing reads main:
   theme.js all point at jsdelivr pinned to the tag (@v1.1.0). The manifest itself is read from main, which is fine:
   it only says which release to load. (The preview image and README stay on main; they are only pictures and text.)
 - install-remote.sh and install-remote.ps1: download that tag's archive instead of the main branch.
+- extras/lights/install.sh and install.ps1: download that tag's light server.
 
 It edits those three files and rebuilds dist/ with --public, then prints the commands that make it real. It does not
 commit, tag or push: that stays a person's decision. One catch worth knowing: people who installed from the
@@ -52,6 +53,8 @@ def main():
 
     edit("install-remote.sh", r'VERSION="v\d+\.\d+\.\d+"', f'VERSION="{v}"')
     edit("install-remote.ps1", r'\$version = "v\d+\.\d+\.\d+"', f'$version = "{v}"')
+    edit("extras/lights/install.sh", r'VERSION="v\d+\.\d+\.\d+"', f'VERSION="{v}"')
+    edit("extras/lights/install.ps1", r'\$version = "v\d+\.\d+\.\d+"', f'$version = "{v}"')
     subprocess.run([sys.executable, os.path.join(ROOT, "build.py"), "--public"], cwd=ROOT, check=True)
 
     print(f"""

@@ -45,12 +45,8 @@
    settle is what stops it feeling quick.
    Nothing moves: no size, no weight, no spacing, no position, which were v3's rules and still are. This is light
    only, so it stays out of the reduce-motion block in touch.css, which exists for things that travel. */
-[data-og="active"] { animation: og-lyric-bloom 1.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-@keyframes og-lyric-bloom {
-  0%   { text-shadow: 0 1px 8px rgb(from var(--gs) r g b / 0.14); }
-  20%  { text-shadow: 0 1px 30px rgb(from var(--gs) r g b / 0.90), 0 0 88px rgb(from var(--gs) r g b / 0.42); }
-  100% { text-shadow: 0 1px 22px rgb(from var(--gs) r g b / 0.45); }
-}
+/* (the bloom that stood here never ran: the v4 block below pins the sung line's text-shadow with !important, and an
+   !important declaration beats an animation. v5 at the foot of this file replaces it.) */
 [data-og]:hover { color: rgb(246 241 232 / 0.85) !important; }
 
 /* no ornament beside the sung line, ever (also overrides any older copy of this theme still loaded) */
@@ -67,7 +63,7 @@
   transition: filter 1.4s ease;
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);   /* a radial mask here drew a circle */
 }
-[style*="--lyrics-color-active"] > div > div { width: min(1040px, calc(100% - clamp(32px, 8vw, 160px))) !important; margin-inline: auto !important; }
+[style*="--lyrics-color-active"] > div > div { width: min(1240px, calc(100% - clamp(32px, 8vw, 160px))) !important; margin-inline: auto !important; }
 /* the wallpaper behind the words is a photograph stretched over a whole pane; at 26% on a near-black ground its
    own gradients band. A fine grain over the top dithers the steps away, the same trick the full-screen stage uses. */
 .main-view-container:has([style*="--lyrics-color-active"])::after {
@@ -77,8 +73,8 @@
 /* Left aligned, in a centred column. Centring every line puts a ragged edge on both sides and the eye has to find
    the start of each one; a single left edge reads as a lyric sheet ("left aligned cleaner"). */
 [data-og] {
-  text-align: left; font-size: calc(clamp(26px, 2.4vw, 46px) * var(--og-ui)); line-height: 1.28; font-weight: 700; letter-spacing: -0.02em;
-  padding-block: 10px !important; text-wrap: pretty;
+  text-align: left; font-size: calc(clamp(30px, 3vw, 60px) * var(--og-ui)); line-height: 1.24; font-weight: 700; letter-spacing: -0.02em;
+  padding-block: 12px !important; text-wrap: pretty;
 }
 [data-og="next"] { -webkit-text-fill-color: rgb(246 241 232 / 0.34) !important; -webkit-text-stroke: 0 transparent !important; text-shadow: none !important; }
 [data-og="passed"] { -webkit-text-fill-color: rgb(246 241 232 / 0.16) !important; -webkit-text-stroke: 0 transparent !important; text-shadow: none !important; }
@@ -92,3 +88,57 @@
 [data-og]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.7) !important; }
 /* the little "Lyrics provided by" line and the pane's own header keep out of the way */
 [style*="--lyrics-color-active"] .lyrics-lyrics-provider, [style*="--lyrics-color-active"] [class*="provider" i] { opacity: 0.35; text-align: center; }
+
+/* ---- bigger words, and the artist behind them ("larger lyrics", "also artist as bg?") ----
+   The words go up to 60 px on a 1080p screen (they stopped at 46) and the column widens to 1240 px so the bigger
+   type does not simply wrap more; the size rule is the v4 block above. */
+
+/* ---- v5: the line lights up, and the room is alive ("so it feels more alive", "the way the lyrics become selected
+   could be more beautiful") ----
+   Selecting a line: a soft band of the song's colour sweeps once across it, left to right, and the words are white
+   behind it and still dim ahead of it, so the line is switched on along its length rather than recoloured all at
+   once. It starts exactly where the waiting line was (the same dim fill), so there is no jump. The glow then swells
+   and settles. Light only, as always: no size, weight, spacing or position changes.
+   Because the words are painted by a clipped background, the glow has to be a drop-shadow filter: a text-shadow
+   shows through transparent letters and muddies them. */
+[data-og="active"] {
+  background-image: linear-gradient(100deg, #ffffff 0 42%, color-mix(in srgb, var(--gs) 55%, #ffffff) 50%, rgb(246 241 232 / 0.34) 58% 100%);
+  background-size: 250% 100%; background-position: 0% 0; background-repeat: no-repeat;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 0 9px rgb(from var(--gs) r g b / 0.55)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5));
+  animation: og-lyric-sweep 0.75s cubic-bezier(0.3, 0.6, 0.2, 1) both, og-lyric-glow 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes og-lyric-sweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@keyframes og-lyric-glow {
+  0%   { filter: drop-shadow(0 0 4px rgb(from var(--gs) r g b / 0.20)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5)); }
+  35%  { filter: drop-shadow(0 0 16px rgb(from var(--gs) r g b / 0.85)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5)); }
+  100% { filter: drop-shadow(0 0 9px rgb(from var(--gs) r g b / 0.55)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.5)); }
+}
+/* The room behind the words moves: the picture drifts in a slow push and pan (about 40 s each way) and breathes
+   with the beat through the same swell the full-screen stage uses. Transform and scale only, so it stays on the
+   compositor and costs nothing per frame. */
+.main-view-container:has([style*="--lyrics-color-active"])::before {
+  scale: var(--og-swell, 1);
+  animation: og-lyric-drift 40s ease-in-out infinite alternate;
+}
+@keyframes og-lyric-drift {
+  from { transform: scale(1.04) translate(-1.2%, -0.8%); }
+  to   { transform: scale(1.11) translate(1.2%, 0.8%); }
+}
+
+/* the song's Canvas behind the words (runtime.js adds the video only while lyrics are on screen). It is a portrait
+   loop stretched over a wide pane, so it is darkened and softened into light and movement rather than shown as a
+   picture, and it drifts and breathes with the room like the wallpaper does. */
+#og-lyric-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;
+  opacity: 0.26;       /* no filter: a blur over a playing video cost 3 to 4 ms a frame on the Mini; the 480 px
+                          loop stretched over the pane is soft already, and low opacity on the dark ground dims it */
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);
+  scale: var(--og-swell, 1);
+  animation: og-lyric-drift 40s ease-in-out infinite alternate;
+  transition: opacity 1.2s ease;
+}
+html.office-glass-paused #og-lyric-canvas { opacity: 0.2; }
+

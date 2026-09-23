@@ -186,6 +186,73 @@
       if (l.style.getPropertyValue('--d') !== d) l.style.setProperty('--d', d);
     });
   };
+  // ---- the song's Canvas behind the lyrics ("the one beside, video gif one") ----
+  // Spotify's Canvas is the short looping video it plays beside a song. Its plain .mp4 is H.264, which this browser
+  // cannot decode, so this does what Spotify's own Canvas player does: ask Spotify's canvas query for the file id,
+  // ask Spotify's manifest service which versions exist, and take the WebM (VP9) one at 480 px wide, which is plenty
+  // for a softened background. The pieces (an 8 s loop is about 1.3 MB) come from Spotify's video CDN and are fed
+  // to the <video> through MediaSource. Every address is checked before it is fetched: the manifest only from
+  // spclient.wg.spotify.com, the pieces only from video-*.spotifycdn.com or video-*.scdn.co, and no more than 8 MB.
+  // It loads only while lyrics are on screen, plays muted and looping, holds still while the music is paused, and
+  // a song without a Canvas (or any failure) keeps the wallpaper. Settings > Lyrics turns it off.
+  const CANVAS_TYPE = 'video/webm; codecs="vp9"';
+  let canvasKey = null, canvasBufs = null, canvasLoading = null;
+  const loadCanvas = async (uri) => {
+    const g = await Spicetify.GraphQL.Request(Spicetify.GraphQL.Definitions.canvas, { trackUri: uri });
+    const c = g && g.data && g.data.trackUnion && g.data.trackUnion.canvas;
+    if (!c || !/VIDEO/.test(c.type || '') || !/^[0-9a-f]{32}$/.test(c.fileId || '')) return null;
+    const tok = (Spicetify.Platform.Session && Spicetify.Platform.Session.accessToken) || (await Spicetify.Platform.AuthorizationAPI.getState()).token.accessToken;
+    const m = await (await fetch('https://spclient.wg.spotify.com/manifests/v9/json/sources/' + c.fileId + '/options/supports_drm', { headers: { authorization: 'Bearer ' + tok } })).json();
+    const k = m && m.contents && m.contents[0];
+    if (!k || (k.encryption_infos && k.encryption_infos.length) || !window.MediaSource || !MediaSource.isTypeSupported(CANVAS_TYPE)) return null;
+    const webm = (k.profiles || []).filter((p) => p.file_type === 'webm' && /vp9/.test(p.video_codec || '')).sort((a, b) => a.video_width - b.video_width);
+    const p = webm.find((x) => x.video_width >= 480) || webm[webm.length - 1];
+    const base = (m.base_urls || []).find((u) => /^https:\/\/video-[a-z]+\.(spotifycdn\.com|scdn\.co)\/segments\/$/.test(u));
+    const tmplOk = (t) => typeof t === 'string' && t.startsWith('v1/origins/') && !t.includes('://');
+    if (!p || !base || !tmplOk(m.initialization_template) || !tmplOk(m.segment_template)) return null;
+    const fill = (t, ts) => base + t.replace('{{profile_id}}', p.id).replace('{{file_type}}', 'webm').replace('{{segment_timestamp}}', ts);
+    const urls = [fill(m.initialization_template)];
+    for (let t = (k.start_time_millis || 0) / 1000; t * 1000 < k.end_time_millis && urls.length < 9; t += k.segment_length || 4) urls.push(fill(m.segment_template, t));
+    const bufs = await Promise.all(urls.map((u) => fetch(u).then((res) => { if (!res.ok) throw new Error('canvas ' + res.status); return res.arrayBuffer(); })));
+    return bufs.reduce((n, b) => n + b.byteLength, 0) <= 8e6 ? bufs : null;
+  };
+  const attachCanvas = (v, bufs) => {
+    const ms = new MediaSource(), url = URL.createObjectURL(ms);
+    v.src = url;
+    ms.addEventListener('sourceopen', async () => {
+      URL.revokeObjectURL(url);
+      try {
+        const sb = ms.addSourceBuffer(CANVAS_TYPE); sb.mode = 'sequence';
+        for (const b of bufs) { sb.appendBuffer(b); await new Promise((ok) => sb.addEventListener('updateend', ok, { once: true })); }
+        ms.endOfStream();
+      } catch (e) { v.remove(); }
+    }, { once: true });
+  };
+  const lyricCanvas = () => {
+    const pane = document.querySelector('.main-view-container');
+    const want = localStorage.getItem('office-glass-lyric-canvas') !== '0' && lyricsBox && pane && pane.contains(lyricsBox);
+    let v = document.getElementById('og-lyric-canvas');
+    if (!want) { if (v) { v.pause(); v.remove(); } return; }
+    let uri = null; try { uri = Spicetify.Player.data.item.uri; } catch (e) {}
+    if (!uri || !uri.startsWith('spotify:track:') || !Spicetify.GraphQL || !Spicetify.GraphQL.Definitions || !Spicetify.GraphQL.Definitions.canvas) return;
+    if (uri !== canvasKey) {
+      canvasKey = uri; canvasBufs = null;
+      if (v) { v.pause(); v.remove(); v = null; }
+      const mine = canvasLoading = loadCanvas(uri).catch(() => null);
+      mine.then((bufs) => { if (canvasLoading === mine && canvasKey === uri) { canvasBufs = bufs; lyricCanvas(); } });
+      return;
+    }
+    if (!canvasBufs) return;                                                // none for this song, or still arriving
+    if (!v || v.parentElement !== pane) {
+      if (v) v.remove();
+      v = document.createElement('video'); v.id = 'og-lyric-canvas';
+      v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('aria-hidden', 'true');
+      pane.prepend(v);                                                     // above the wallpaper, under the words
+      attachCanvas(v, canvasBufs);
+    }
+    let playing = true; try { playing = Spicetify.Player.isPlaying(); } catch (e) {}
+    if (playing && v.paused) v.play().catch(() => {}); else if (!playing && !v.paused) v.pause();
+  };
   const tick = () => {
     const root = document.querySelector('[style*="--cinema-mode-bg-color-from"]');
     document.documentElement.classList.toggle('office-glass-fs', !!root);
@@ -193,6 +260,7 @@
     pickVoice();
     flatArt();
     artistVisuals();
+    lyricCanvas();
     tagAbout();
     let playingNow = true; try { playingNow = Spicetify.Player.isPlaying(); } catch (e) {}
     document.documentElement.classList.toggle('office-glass-paused', !playingNow);
@@ -315,8 +383,13 @@
   };
   measureWall(10);
   window.__ogMeasureWall = () => measureWall(3);
+  window.__ogReapplyColour = () => { if (lastRgb) applyColour(...lastRgb); };
   const applyColour = (r0, g0, b0) => {
     lastRgb = [r0, g0, b0];
+    // "One colour, always" in the settings: like a car's ambient light, the picked colour stands in for the song's
+    // everywhere the song's colour goes (the glass, the type, the lights). The song's own is kept for switching back.
+    const pick = localStorage.getItem('office-glass-colour-pick') || '';
+    if (/^#[0-9a-f]{6}$/i.test(pick)) [r0, g0, b0] = [1, 3, 5].map((i) => parseInt(pick.slice(i, i + 2), 16));
     let [h, sa] = hsv(r0, g0, b0);
     voiceHue = h; voiceSat = sa;
     if (h > 0.14 && h < 0.25) h = h < 0.19 ? 0.125 : 0.29;      // yellow-green reads sickly: commit to gold or green, like the lights

@@ -9,7 +9,7 @@ html.office-glass-touch .main-card-card:hover, html.office-glass-touch [data-enc
   background: linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025)) !important;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.10), 0 10px 30px rgb(0 0 0 / 0.30);
 }
-html.office-glass-touch .main-trackList-trackListRow:hover:not(.main-trackList-selected):not(:has(.main-trackList-playingIcon)) { background: transparent !important; box-shadow: none; }
+html.office-glass-touch .main-trackList-trackListRow:hover:not(.main-trackList-selected):not(:has(.main-trackList-playingIcon)):not(:has(.main-trackList-rowMarker img[src*="equaliser"])):not(:has(.main-trackList-rowImagePlayButton[aria-label="Pause"])) { background: transparent !important; box-shadow: none; }
 html.office-glass-touch [data-og]:hover { -webkit-text-fill-color: inherit !important; }
 html.office-glass-touch [data-og="next"]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.34) !important; }
 html.office-glass-touch [data-og="passed"]:hover { -webkit-text-fill-color: rgb(246 241 232 / 0.16) !important; }
@@ -50,9 +50,19 @@ html.office-glass-touch [data-testid="home-page"] section:first-of-type .main-pl
 /* anywhere a bead IS shown to a finger, its glyph is shown with it */
 html.office-glass-touch .main-playButton-PlayButton button > span,
 html.office-glass-touch .main-card-PlayButtonContainer button > span { opacity: 1 !important; }
-html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowImagePlayButton { opacity: 1 !important; width: 44px; height: 44px; margin: -10px; padding: 10px; }
-html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowMarker,
-html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowSectionIndex > span:not(:has(button)) { display: none; }   /* the number gives way to the play */
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowImagePlayButton { opacity: 1 !important; width: 44px; height: 44px; margin: -14px; padding: 10px; }
+/* Spotify pins the button to the top-left of a 16 px spot, so growing it to a 44 px target has to pull it back by
+   half the difference, 14 px, on every side. At -10 px it rode 4 px low and 4 px right, which showed against the
+   artwork beside it ("pause button not vertically aligned"). The glyph is centred inside the box as well. */
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowImagePlayButton { display: flex; align-items: center; justify-content: center; }
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowMarker { align-items: center; }
+/* the number gives way to the play. Hide the number itself, never its box: since Spotify 1.3 the row's play button
+   and the playing bars live INSIDE .main-trackList-rowMarker, and hiding the box took all three off every row
+   ("doesnt show play buttons or whats playing"). The bars give way too; the lit row says it. */
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowMarker > span,
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowMarker > img,
+html.office-glass-touch .main-trackList-trackListRow .main-trackList-rowSectionIndex > span:not(:has(button)) { display: none; }
+html.office-glass-touch .main-trackList-trackListRow:has(.main-trackList-rowImagePlayButton[aria-label="Pause"]) .main-trackList-rowImagePlayButton svg { fill: var(--gs); color: var(--gs); filter: drop-shadow(0 0 6px rgb(from var(--gs) r g b / 0.7)); }
 html.office-glass-touch .main-trackList-rowSectionIndex { justify-content: center; }
 html.office-glass-touch .main-card-PlayButtonContainer, html.office-glass-touch .main-card-card .main-playButton-PlayButton { opacity: 1 !important; transform: none !important; }
 html.office-glass-touch .main-card-PlayButtonContainer button, html.office-glass-touch .main-card-card .main-playButton-PlayButton button { width: 48px !important; height: 48px !important; }
@@ -74,3 +84,26 @@ html.office-glass-touch aside.main-nowPlayingBar-container [data-testid="control
 html.office-glass-touch aside.main-nowPlayingBar-container .player-controls__buttons button svg { width: 22px !important; height: 22px !important; }
 html.office-glass-touch aside.main-nowPlayingBar-container .main-nowPlayingBar-nowPlayingBar { padding-block: 14px 18px !important; }
 html.office-glass-touch .playback-bar .progress-bar { padding-block: 10px !important; }
+
+/* ---- the volume slider, sized for a finger ("struggling with volume change") ----
+   Spotify's is 81 px wide with a 12 px tall target and a 4 px track: fine for a mouse, a sliver for a fingertip.
+   In touch mode it is nearly twice as wide, with a target 28 px taller than the track. Only the size changes; the drag
+   is still Spotify's own. On a Connect speaker (a Sonos) the slider can still lag a moment, because Spotify waits
+   for the speaker to confirm each change. */
+html.office-glass-touch [data-testid="volume-bar"] .volume-bar__slider-container { width: 150px; }
+/* the taller target is an invisible band above and below the track: a touch on it lands on the slider itself, so
+   Spotify reads it as a normal drag, and the track stays exactly where Spotify draws it */
+html.office-glass-touch [data-testid="volume-bar"] .progress-bar::before { content: ""; position: absolute; inset: -12px 0; }
+
+
+/* The song in the dock, read from arm's length: Spotify sets the title at 14 px and the artist at 12 px, which is
+   desk-monitor size ("music title and artist small on tablet mode"). A little larger art to carry the larger text. */
+html.office-glass-touch .main-nowPlayingBar-left .main-trackInfo-name,
+html.office-glass-touch .main-nowPlayingBar-left .main-trackInfo-name a { font-size: calc(19px * var(--og-ui)) !important; line-height: 1.25 !important; }
+html.office-glass-touch .main-nowPlayingBar-left .main-trackInfo-artists,
+html.office-glass-touch .main-nowPlayingBar-left .main-trackInfo-artists a,
+html.office-glass-touch .main-nowPlayingBar-left .main-trackInfo-artists span { font-size: calc(16px * var(--og-ui)) !important; line-height: 1.3 !important; }
+html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-trackInfo .encore-text-marginal,
+html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-trackInfo .encore-text-marginal button { font-size: calc(13px * var(--og-ui)) !important; }
+html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-coverArtContainer,
+html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-coverArtContainer .cover-art { width: 68px !important; height: 68px !important; }

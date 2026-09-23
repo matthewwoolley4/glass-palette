@@ -11,6 +11,18 @@ Everything is configurable from a panel inside Spotify's own Settings page. Noth
 no key, no service, and nothing to sign up for. It never contacts anything of mine. See
 [Is this safe to install](#is-this-safe-to-install) for exactly what it does on your machine.
 
+![The full-screen stage on four songs: the same glass capsules take on each song's colour](docs/screens/colours.jpg)
+
+| | |
+| --- | --- |
+| ![Lyrics lit one line at a time over the song's own Canvas video](docs/screens/lyrics.jpg) | ![An album page with the playing song's row lit in its colour](docs/screens/album.jpg) |
+| **Lyrics** over the song's own Canvas video, the sung line lit and the rest softened. | **Albums and playlists** on glass, the playing row lit in the song's colour. |
+| ![An artist page with the whole app tinted to the song](docs/screens/artist.jpg) | ![The Glass Palette panel inside Spotify's Settings](docs/screens/settings.jpg) |
+| **The whole app** follows the song, not just full screen. | **Settings** inside Spotify: pick your screen, everything else is set for you. |
+
+<sub>Real screenshots of the theme with its default wallpaper. Album art, artist photos and videos belong to their
+owners and are shown only as Spotify shows them.</sub>
+
 ## Install from the Marketplace
 
 If you already run Spicetify Marketplace, search it for **Glass Palette** and install it there, then restart
@@ -99,8 +111,9 @@ public statement about the current `main`, not a claim I am making in prose. The
 wallpaper render is seeded, and the build itself is concatenation plus base64, so the same source always produces
 identical bytes. That is what makes a byte comparison meaningful rather than approximate.
 
-If you want to read rather than verify, the honest reading order is `src/runtime.js`, `src/settings.js` and
-`src/touch.js`. Those three are the entire program. Everything else is CSS.
+If you want to read rather than verify, the honest reading order is `src/runtime.js`, `src/settings.js`,
+`src/touch.js` and `src/lights.js` (which does nothing unless you switch the lights on). Those four are the entire
+program. Everything else is CSS.
 
 **What Spicetify does, which is the bigger thing.** This theme is not a Spotify plugin in any official sense.
 Spicetify works by editing files inside Spotify's own installation folder, which is why a Microsoft Store or Snap
@@ -115,7 +128,7 @@ one, with its own maintainers and its own source: read it at
 | --- | --- | --- |
 | `user.css` | Plain CSS | Changes how things look. CSS cannot read your account, make requests or run logic. The Manrope font and the stage image live inside it as base64 `data:` URIs, which is why the file is large. |
 | `color.ini` | Plain text | A list of colours. |
-| `theme.js` | Plain JavaScript | The part that can actually do things, so the part to read. It runs inside Spotify's window with the same access any Spicetify extension has. About 760 lines, unminified, built by `build.py` purely by concatenating `src/runtime.js`, `src/settings.js` and `src/touch.js`. Nothing is generated, minified or fetched. |
+| `theme.js` | Plain JavaScript | The part that can actually do things, so the part to read. It runs inside Spotify's window with the same access any Spicetify extension has. About 1100 lines, unminified, built by `build.py` purely by concatenating `src/runtime.js`, `src/settings.js`, `src/touch.js` and `src/lights.js`. Nothing is generated, minified or fetched. |
 
 **One thing in `theme.js` looks alarming and is not.** The file is around 540 KB and one of its lines is roughly
 half a megabyte long, which is exactly what obfuscated code looks like. It is not. `theme.js` carries a complete
@@ -131,8 +144,16 @@ committed in this repository. Everything else in the file is normal, readable, l
   flat-colour cover.
 - `spclient.wg.spotify.com/color-lyrics/...` for lyric timings.
 - `spclient.wg.spotify.com/audio-attributes/...` for the beat map.
+- Spotify's own GraphQL service, through Spicetify's `Spicetify.GraphQL` (the same queries the app runs), for the
+  artist's photographs and to ask whether the song has a Canvas.
+- For a song with a Canvas, while lyrics are on screen only: `spclient.wg.spotify.com/manifests/...` to list the
+  Canvas's versions, then its WebM pieces from `video-cf.spotifycdn.com` or `video-fa.scdn.co`, Spotify's video
+  CDN. The theme checks each address against those hosts before fetching and stops at 8 MB. Settings > Lyrics
+  turns it off, and then none of these requests happen.
+- Only if you turn on **Send the song to your lights**: the song's colour, its beat map and where playback is, to
+  the light server on `127.0.0.1`. The theme refuses any other address for this, so it cannot leave your computer.
 
-All three are Spotify's own endpoints, called with the token Spotify has already put in the page, for data the app
+All of these are Spotify's own endpoints, called with the token Spotify has already put in the page, for data the app
 itself already uses. Nothing is sent anywhere else, there is no analytics, no telemetry, no update check and no
 call home. The theme contains no `eval`, no `new Function`, no dynamic `import`, and no code fetched at runtime.
 Your settings are `localStorage` keys on your own machine.
@@ -140,11 +161,11 @@ Your settings are `localStorage` keys on your own machine.
 Two other web addresses appear in the files and neither is ever requested: `www.w3.org` is the XML namespace that
 every inline SVG has to declare, and `github.com/matthewwoolley4/glass-palette` is the link at the foot of the
 settings panel, which only opens if you click it. Searching the built files for `http` will turn up those two, the
-three above, and `127.0.0.1`. That is the complete list.
+Spotify addresses above, and `127.0.0.1`. That is the complete list.
 
-The two optional services in the settings panel are **off unless you type an address and press Test**, they point
-at `127.0.0.1` on your own machine, and the theme only ever reads their `/status` to show a green dot. They are
-not required and the theme is complete without them.
+The two optional services in the settings panel point at `127.0.0.1` on your own machine. The theme reads their
+`/status` only while the settings panel is open, to show a green dot, and sends the lights nothing until you switch
+that on. They are not required and the theme is complete without them.
 
 **About the one-line install.** `curl ... | sh` and `iwr ... | iex` run a script off the internet without showing
 it to you first. That is the normal way Spicetify is installed and it is what most projects do, but "everyone does
@@ -216,7 +237,10 @@ Spotify > Settings > Glass Palette (or the profile menu > Glass Palette settings
 | Play the song's video on the stage | Off | Spotify's looping Canvas clip, cropped into the artwork's square. Off by default because Spotify rebuilds the whole full-screen layout around a Canvas and the stage has to fight it. The right panel keeps its video either way. |
 | Lyrics lead | 350 ms | How far ahead of Spotify's clock the lines light. Raise it if words trail the sound on a Connect speaker. |
 | Beat offset | 0 ms | Nudges the beat map if the swell feels early or late. |
-| Light server | `http://127.0.0.1:8197` | Optional. Where the Govee DJ light server is, if you run one. |
+| Colour | Follow the song | Or pick one colour, like a car's ambient light: the glass, the type and your lights all hold it. |
+| Light server | `http://127.0.0.1:8197` | Optional. Where Glass Palette Lights (or your own light server) answers. |
+| Send the song to your lights | Off | Sends the song's colour and beat to the light server on this computer. |
+| Your lights | | The Govee lights the server found: tick the ones that follow the song, Flash one to see which it is. |
 | Razer keyboard | `http://127.0.0.1:8198` | Optional. Where the Chroma bridge is, if you run one. |
 
 They are plain `localStorage` keys (`office-glass-*`) if you would rather set them from the console.
@@ -250,8 +274,23 @@ accident, and `python build.py --public` always goes back to the default.
 Neither is needed. The theme is complete without them, and each row in the settings panel says whether it is
 answering.
 
-- **Room lights.** If you run a light server that exposes the playing song's colour and a live level on `/status`,
-  the theme's settings page will confirm it is answering. The theme itself never talks to it; it only reports.
+- **Room lights (Govee).** `extras/lights/` is Glass Palette Lights, a small server that puts the playing song's
+  colour on Govee lights and lifts them on the beat. It finds the lights by itself over your own network: no Govee
+  account, no API key, nothing in the cloud. Evenings run warmer and dimmer on their own (less blue light at
+  night), and it never switches a light on or off. Three steps:
+  1. In the Govee Home app, open each light's settings and turn on **LAN Control**.
+  2. Install it (it needs [Node.js](https://nodejs.org) 18 or newer, and keeps itself running from login):
+     - macOS / Linux: `curl -fsSL https://raw.githubusercontent.com/matthewwoolley4/glass-palette/main/extras/lights/install.sh | sh`
+     - Windows: `iwr -useb https://raw.githubusercontent.com/matthewwoolley4/glass-palette/main/extras/lights/install.ps1 | iex`
+  3. In Spotify: Settings > Glass Palette > turn on **Send the song to your lights**, press **Find lights**, and
+     tick the ones you want. **Flash** blinks one so you can tell them apart.
+
+  Only models with LAN Control work this way (most recent strips and bulbs). The server runs on the computer that
+  runs Spotify, on the same network as the lights; the first time, your system may ask whether Node.js may use the
+  local network, and it needs a yes. Its settings (brightness, beat depth, the night hours) are in
+  `~/.config/glass-palette-lights/config.json` (Windows: `%APPDATA%\glass-palette-lights\config.json`). Remove it
+  with `sh install.sh --remove` or `install.ps1 -Remove`. `node extras/lights/test.js` checks it against a stand-in
+  light, so no real light is touched.
 - **Razer keyboard.** `extras/chroma-bridge/` mirrors the room on a Razer keyboard through Synapse's Chroma REST
   API: the body of the keyboard in the song's colour, WASD in warm white, brightness moving with the beat. Run
   `node extras/chroma-bridge/chroma-bridge.js`. Needs Razer Synapse running with Chroma Connect. Only one copy may
@@ -286,6 +325,7 @@ answering.
 | `tools/leakcheck.py` | Fails on API keys, tokens, private addresses, home paths, emails or image metadata in any tracked file |
 | `tools/compat.py` | After a Spotify update, lists any of the theme's hooks into Spotify that the update removed |
 | `tools/release.py` | Pins the installers and the Marketplace manifest to one tagged release |
+| `extras/lights/` | Glass Palette Lights: the song on Govee lights, its installers and its test |
 | `extras/chroma-bridge/` | The Razer Chroma bridge |
 | `manifest.json` | Spicetify Marketplace listing |
 

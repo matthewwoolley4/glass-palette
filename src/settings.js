@@ -38,6 +38,9 @@
     { group: 'Look', key: 'canvas', label: 'Play the song’s video on the stage', hint: 'Off keeps the artwork square and still.',
       type: 'switch', def: '0' },
 
+    { group: 'Colour', key: 'colour-pick', label: 'Colour', hint: 'Follow each song, or hold one colour everywhere, your lights included.',
+      tip: 'Like a car’s ambient light: pick once and the glass, the type and the lights all stay on it.', type: 'colour', def: '' },
+
     { group: 'Wallpaper', key: 'wall', label: 'The picture behind the glass', hint: 'Any picture. One strong colour on a dark ground tints best.',
       tip: 'The theme finds the picture’s main colour and turns it to each song’s. It is kept on this machine and never uploaded.',
       type: 'wallpaper', def: '' },
@@ -45,11 +48,16 @@
     { group: 'Lyrics', key: 'lyric-lead-ms', label: 'Lyrics run early by', hint: 'Turn this up if the words arrive late.',
       tip: 'A Connect speaker plays ahead of the app, so Spotify’s own timing lags what you hear.',
       type: 'range', min: -500, max: 1200, step: 50, def: 350, fmt: (v) => v + ' ms' },
+    { group: 'Lyrics', key: 'lyric-canvas', label: 'The song’s video behind the lyrics', hint: 'When the song has a Canvas. Off keeps the wallpaper.',
+      type: 'switch', def: '1' },
     { group: 'Lyrics', key: 'beat-offset-ms', label: 'Beat runs early by', hint: 'Only if the swell feels off the beat.',
       type: 'range', min: -300, max: 300, step: 10, def: 0, fmt: (v) => v + ' ms' },
 
     { group: 'Room lights and keyboard', key: 'govee-url', label: 'Light server', hint: 'Optional. Leave it alone if you do not run one.',
       type: 'service', def: 'http://127.0.0.1:8197', check: (j) => j && typeof j.enabled === 'boolean', ok: 'lights answering' },
+    { group: 'Room lights and keyboard', key: 'lights-feed', label: 'Send the song to your lights', hint: 'Its colour and beat, to the light server on this computer only.',
+      tip: 'Off by default. Only ever sent to 127.0.0.1 or localhost, never across the network or the internet.', type: 'switch', def: '0' },
+    { group: 'Room lights and keyboard', key: 'lights-list', label: 'Your lights', hint: 'Tick the ones that should follow the song.', type: 'lights' },
     { group: 'Room lights and keyboard', key: 'chroma-url', label: 'Razer keyboard', hint: 'Optional. Needs the bridge from the project running.',
       type: 'service', def: 'http://127.0.0.1:8198', check: (j) => j && j.app === 'glass-palette-chroma-bridge', ok: 'bridge running' },
   ];
@@ -102,6 +110,49 @@
     btn.addEventListener('click', test);
     wrap.append(input, btn, dot, note);
     setTimeout(test, 300);
+    return wrap;
+  };
+
+  // Govee lights found by Glass Palette Lights (extras/lights): tick which ones follow the song, flash one to see
+  // which it is. Talks only to the light server's own address, and only when this panel is open or you press a button.
+  const lightsRow = () => {
+    const wrap = el('div', 'og-set-lights');
+    const bar = el('div', 'og-set-lights-bar');
+    const find = el('button', 'og-set-test', 'Find lights');
+    const note = el('span', 'og-set-note', 'asking…');
+    const list = el('div', 'og-set-lights-list');
+    bar.append(note, find); wrap.append(bar, list);
+    const base = () => get('govee-url', 'http://127.0.0.1:8197').replace(/\/+$/, '');
+    const call = async (p, body) => {
+      const init = body === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) };
+      const r = await fetch(base() + p, { ...init, signal: AbortSignal.timeout(6000) });
+      return r.json();
+    };
+    const show = (s) => {
+      list.replaceChildren();
+      find.hidden = !(s && s.app === 'glass-palette-lights');
+      if (!s) { note.textContent = 'No light server answering. extras/lights in the project sets one up.'; return; }
+      if (s.app !== 'glass-palette-lights') { note.textContent = 'This light server manages its own lights.'; return; }
+      note.textContent = s.lights.length ? s.lights.length + (s.lights.length === 1 ? ' light' : ' lights')
+        : 'None found. Turn on LAN Control for each light in the Govee Home app, then Find lights.';
+      for (const l of s.lights) {
+        const row = el('label', 'og-set-light');
+        const box = el('input'); box.type = 'checkbox'; box.checked = l.use;
+        box.addEventListener('change', async () => { try { show(await call('/use', { id: l.id, use: box.checked })); } catch (e) { show(null); } });
+        const name = el('div', 'og-set-light-name', l.sku);
+        const sub = el('div', 'og-set-light-sub', '…' + String(l.id).slice(-5) + '  ' + l.ip);
+        const fl = el('button', 'og-set-test', 'Flash');
+        fl.addEventListener('click', (e) => { e.preventDefault(); call('/flash', { id: l.id }).catch(() => {}); });
+        row.append(box, name, sub, fl);
+        list.appendChild(row);
+      }
+    };
+    find.addEventListener('click', async () => {
+      find.disabled = true; note.textContent = 'Looking on your network…';
+      try { show(await call('/scan', {})); } catch (e) { show(null); }
+      find.disabled = false;
+    });
+    setTimeout(async () => { try { show(await call('/status')); } catch (e) { show(null); } }, 400);
     return wrap;
   };
 
@@ -159,6 +210,34 @@
   const controlFor = (k) => {
     if (k.type === 'service') return serviceRow(k);
     if (k.type === 'wallpaper') return wallRow(k);
+    if (k.type === 'lights') return lightsRow(k);
+    if (k.type === 'colour') {
+      const wrap = el('div', 'og-set-colours');
+      const SW = [['', 'Follow the song'], ['#ff453a', 'Red'], ['#ff8a3d', 'Amber'], ['#ffc83d', 'Gold'], ['#32d583', 'Green'],
+                  ['#22d3ee', 'Cyan'], ['#3b82f6', 'Blue'], ['#8b5cf6', 'Violet'], ['#ec4899', 'Pink']];
+      // any colour: the browser's own picker, under a "+" so it never reads as a black swatch before it is used
+      const any = el('label', 'og-set-colour-custom'); any.title = 'Any colour'; any.setAttribute('aria-label', 'Any colour');
+      const custom = el('input'); custom.type = 'color'; any.append(el('span', null, '+'), custom);
+      const paint = () => {
+        const v = get(k.key, '');
+        for (const b of wrap.querySelectorAll('.og-set-swatch')) b.classList.toggle('on', b.dataset.v === v);
+        const mine = !!v && !SW.some(([x]) => x === v);
+        any.classList.toggle('on', mine); any.style.setProperty('--sw', mine ? v : 'transparent');
+        if (v) custom.value = v;
+      };
+      const choose = (v) => { set(k.key, v); apply(); if (window.__ogReapplyColour) window.__ogReapplyColour(); paint(); };
+      for (const [v, name] of SW) {
+        const b = el('button', 'og-set-swatch' + (v ? '' : ' og-set-swatch-song'));
+        b.dataset.v = v; b.title = name; b.setAttribute('aria-label', name);
+        if (v) b.style.setProperty('--sw', v);
+        b.addEventListener('click', () => choose(v));
+        wrap.appendChild(b);
+      }
+      custom.addEventListener('input', () => choose(custom.value.toLowerCase()));
+      wrap.appendChild(any);
+      paint();
+      return wrap;
+    }
     if (k.type === 'switch') {
       const b = el('button', 'og-set-switch');
       const paint = () => { const on = get(k.key, k.def) === '1'; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); };

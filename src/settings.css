@@ -2,15 +2,20 @@
    a pane of glass, warm white type, and the playing song's colour as the only accent. */
 
 .og-settings { margin: 8px 0 34px; }
-.og-set-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.og-set-head { display: flex; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 6px; margin-bottom: 22px; }
+/* The panel's name, set like the stage's own titles: solid warm white, heavy and tight. It used to be a white-to-song
+   gradient clipped to the letters, which at this size read as a smudge in the song's colour ("glass palette text in
+   settings looks weird"). The colour lives in the small lit bead instead. */
 .og-set-title {
-  margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--rim);
-  background: linear-gradient(180deg, #fff, rgb(from var(--gs) r g b / 0.85));
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 0; display: inline-flex; align-items: center; gap: 12px;
+  font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; color: var(--rim);
 }
-.og-set-sub { margin: 4px 0 0; flex: 1 1 auto; font-size: 13px; color: rgb(from var(--rim) r g b / 0.60); }
-.og-set-head > div:first-child, .og-set-head { flex-wrap: wrap; }
-.og-set-title + .og-set-sub { flex-basis: 100%; order: 3; }
+.og-set-title::before {
+  content: ""; width: 12px; height: 12px; border-radius: 50%; flex: none;
+  background: var(--gs); box-shadow: 0 0 0 3px rgb(from var(--gs) r g b / 0.18), 0 0 16px rgb(from var(--gs) r g b / 0.65);
+}
+.og-set-reset { margin-left: auto; }
+.og-set-sub { margin: 0; flex: 1 1 100%; order: 3; font-size: 13px; color: rgb(from var(--rim) r g b / 0.60); }
 
 /* presets: the friendly way in. Three cards that say what screen you are on, not six numbers to tune. */
 .og-set-presets { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -134,3 +139,32 @@ html.office-glass-touch .og-set-test, html.office-glass-touch .og-set-reset { pa
 }
 .og-set-wall-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .og-set-wall-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Your lights: found by the light server, ticked to follow the song, one Flash to tell them apart. */
+.og-set-lights { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: min(420px, 100%); }
+.og-set-lights-bar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.og-set-lights-bar .og-set-note { text-align: right; min-width: 0; }
+.og-set-lights-list { display: flex; flex-direction: column; gap: 6px; }
+.og-set-light {
+  display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 12px; cursor: pointer;
+  padding: 8px 8px 8px 14px; border-radius: 14px; border: 1px solid rgb(from var(--rim) r g b / 0.10);
+  background: rgb(255 255 255 / 0.03);
+}
+.og-set-light input { width: 18px; height: 18px; margin: 0; accent-color: var(--gs); }
+.og-set-light-name { font-weight: 700; font-size: 13px; color: var(--rim); }
+.og-set-light-sub { font-size: 12px; color: rgb(from var(--rim) r g b / 0.50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Colour: follow the song (the rainbow), or hold one. One row: ten small beads, bigger ones on a touchscreen. */
+.og-set-colours { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; max-width: 400px; }
+.og-set-swatch, .og-set-colour-custom {
+  flex: none; width: 28px; height: 28px; padding: 0; border-radius: 50%; cursor: pointer; border: 0;
+  background: var(--sw); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25), 0 2px 8px rgb(0 0 0 / 0.35);
+  transition: box-shadow 0.16s ease-out;
+}
+.og-set-swatch-song { background: conic-gradient(from 90deg, #ff453a, #ffc83d, #32d583, #22d3ee, #3b82f6, #8b5cf6, #ec4899, #ff453a); }
+.og-set-swatch.on, .og-set-colour-custom.on { box-shadow: 0 0 0 2px rgb(10 10 12), 0 0 0 4px var(--rim), 0 0 18px rgb(from var(--gs) r g b / 0.6); }
+.og-set-colour-custom { position: relative; display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.45); }
+.og-set-colour-custom span { font-size: 17px; font-weight: 600; line-height: 1; color: rgb(from var(--rim) r g b / 0.85); pointer-events: none; }
+.og-set-colour-custom.on span { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 0.6); }
+.og-set-colour-custom input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+html.office-glass-touch .og-set-swatch, html.office-glass-touch .og-set-colour-custom { width: 32px; height: 32px; }
