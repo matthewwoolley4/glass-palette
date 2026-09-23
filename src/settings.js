@@ -1,5 +1,5 @@
 // Glass Palette settings. Every knob the theme has, in one place, inside Spotify's own Settings page, plus the two
-// optional local services (the Govee light server and the Razer Chroma bridge) with a live connection test.
+// the optional local light server with a live connection test.
 // Nothing here is required: the theme runs with no services and every knob has a sane default.
 // Storage is localStorage, so settings are per machine, which is the point: a wall screen and a desk want
 // different sizes, and a touchscreen wants different targets than a mouse.
@@ -53,13 +53,11 @@
     { group: 'Lyrics', key: 'beat-offset-ms', label: 'Beat runs early by', hint: 'Only if the swell feels off the beat.',
       type: 'range', min: -300, max: 300, step: 10, def: 0, fmt: (v) => v + ' ms' },
 
-    { group: 'Room lights and keyboard', key: 'govee-url', label: 'Light server', hint: 'Optional. Leave it alone if you do not run one.',
+    { group: 'Room lights', key: 'govee-url', label: 'Light server', hint: 'Optional. Leave it alone if you do not run one.',
       type: 'service', def: 'http://127.0.0.1:8197', check: (j) => j && typeof j.enabled === 'boolean', ok: 'lights answering' },
-    { group: 'Room lights and keyboard', key: 'lights-feed', label: 'Send the song to your lights', hint: 'Its colour and beat, to the light server on this computer only.',
+    { group: 'Room lights', key: 'lights-feed', label: 'Send the song to your lights', hint: 'Its colour and beat, to the light server on this computer only.',
       tip: 'Off by default. Only ever sent to 127.0.0.1 or localhost, never across the network or the internet.', type: 'switch', def: '0' },
-    { group: 'Room lights and keyboard', key: 'lights-list', label: 'Your lights', hint: 'Tick the ones that should follow the song.', type: 'lights' },
-    { group: 'Room lights and keyboard', key: 'chroma-url', label: 'Razer keyboard', hint: 'Optional. Needs the bridge from the project running.',
-      type: 'service', def: 'http://127.0.0.1:8198', check: (j) => j && j.app === 'glass-palette-chroma-bridge', ok: 'bridge running' },
+    { group: 'Room lights', key: 'lights-list', label: 'Your lights', hint: 'Tick the ones that should follow the song.', type: 'lights' },
   ];
 
   const WALL_OK = /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/;

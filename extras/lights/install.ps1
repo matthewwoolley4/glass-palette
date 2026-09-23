@@ -9,7 +9,7 @@
 # No administrator rights: it starts from your own Startup folder, hidden, through a one-line script.
 param([switch]$Remove)
 $ErrorActionPreference = "Stop"
-$version = "v1.1.3"
+$version = "v1.1.4"
 $repo = "matthewwoolley4/glass-palette"
 $dir = Join-Path $env:LOCALAPPDATA "glass-palette-lights"
 $startup = Join-Path ([Environment]::GetFolderPath("Startup")) "Glass Palette Lights.vbs"

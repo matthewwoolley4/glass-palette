@@ -8,7 +8,7 @@
 # Spotify, Settings > Glass Palette > "Send the song to your lights", then Find lights.
 # Needs Node.js 18 or newer. It does not install Node for you: that is your call, and one command (below) if not.
 set -e
-VERSION="v1.1.3"
+VERSION="v1.1.4"
 REPO="matthewwoolley4/glass-palette"
 LABEL="com.glasspalette.lights"
 

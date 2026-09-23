@@ -8,7 +8,7 @@ Three kinds of leak, all checked with the standard library and no network:
 
 1. Secrets. API keys and tokens in the shapes the big providers issue them, private keys, and any line that assigns
    a long opaque string to something called a key, token, secret or password. The theme itself needs none of these:
-   it uses the token Spotify already put in the page, and the optional light and keyboard services are addresses on
+   it uses the token Spotify already put in the page, and the optional light service is an address on
    your own machine, never keys.
 2. Where you live on a network or a disk. Private LAN addresses (192.168.x, 10.x, 172.16 to 31.x), home directory
    paths with a user name in them, and email addresses other than GitHub's noreply form.

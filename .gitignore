@@ -9,3 +9,4 @@ assets/wall-raw.webp
 assets/*-preview.png
 .leakcheck.local
 tools/compat-baseline.json
+extras/chroma-bridge/

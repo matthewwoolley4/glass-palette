@@ -163,9 +163,9 @@ every inline SVG has to declare, and `github.com/matthewwoolley4/glass-palette` 
 settings panel, which only opens if you click it. Searching the built files for `http` will turn up those two, the
 Spotify addresses above, and `127.0.0.1`. That is the complete list.
 
-The two optional services in the settings panel point at `127.0.0.1` on your own machine. The theme reads their
+The optional light server in the settings panel points at `127.0.0.1` on your own machine. The theme reads its
 `/status` only while the settings panel is open, to show a green dot, and sends the lights nothing until you switch
-that on. They are not required and the theme is complete without them.
+that on. It is not required and the theme is complete without it.
 
 **About the one-line install.** `curl ... | sh` and `iwr ... | iex` run a script off the internet without showing
 it to you first. That is the normal way Spicetify is installed and it is what most projects do, but "everyone does
@@ -219,7 +219,7 @@ around the artwork's frame. Un-liking is deliberately quiet.
 two. A USB touchscreen reports no touch points at all on macOS, so it cannot be auto-detected; the setting says so.
 
 **Settings inside Spotify.** A "Glass Palette" panel at the top of Spotify's own Settings page, with every knob, a
-plain-language explanation of each, and a live connection test for the two optional services. Also reachable from
+plain-language explanation of each, and a live connection test for the optional light server. Also reachable from
 the profile menu. Settings are stored per machine, which is the point: a 27-inch monitor and a 15-inch touchscreen
 want different sizes.
 
@@ -241,7 +241,6 @@ Spotify > Settings > Glass Palette (or the profile menu > Glass Palette settings
 | Light server | `http://127.0.0.1:8197` | Optional. Where Glass Palette Lights (or your own light server) answers. |
 | Send the song to your lights | Off | Sends the song's colour and beat to the light server on this computer. |
 | Your lights | | The Govee lights the server found: tick the ones that follow the song, Flash one to see which it is. |
-| Razer keyboard | `http://127.0.0.1:8198` | Optional. Where the Chroma bridge is, if you run one. |
 
 They are plain `localStorage` keys (`office-glass-*`) if you would rather set them from the console.
 
@@ -271,8 +270,7 @@ accident, and `python build.py --public` always goes back to the default.
 
 ## Optional services
 
-Neither is needed. The theme is complete without them, and each row in the settings panel says whether it is
-answering.
+Not needed. The theme is complete without it, and the settings panel says whether the light server is answering.
 
 - **Room lights (Govee).** `extras/lights/` is Glass Palette Lights, a small server that puts the playing song's
   colour on Govee lights and lifts them on the beat. It finds the lights by itself over your own network: no Govee
@@ -291,11 +289,6 @@ answering.
   `~/.config/glass-palette-lights/config.json` (Windows: `%APPDATA%\glass-palette-lights\config.json`). Remove it
   with `sh install.sh --remove` or `install.ps1 -Remove`. `node extras/lights/test.js` checks it against a stand-in
   light, so no real light is touched.
-- **Razer keyboard.** `extras/chroma-bridge/` mirrors the room on a Razer keyboard through Synapse's Chroma REST
-  API: the body of the keyboard in the song's colour, WASD in warm white, brightness moving with the beat. Run
-  `node extras/chroma-bridge/chroma-bridge.js`. Needs Razer Synapse running with Chroma Connect. Only one copy may
-  run at a time: Chroma gives the keyboard to whichever app asked last, so a second copy silently steals the session
-  from the first and neither paints. The bridge refuses to start twice and answers `/status` on port 8198.
 
 ## What is in it
 
@@ -326,7 +319,6 @@ answering.
 | `tools/compat.py` | After a Spotify update, lists any of the theme's hooks into Spotify that the update removed |
 | `tools/release.py` | Pins the installers and the Marketplace manifest to one tagged release |
 | `extras/lights/` | Glass Palette Lights: the song on Govee lights, its installers and its test |
-| `extras/chroma-bridge/` | The Razer Chroma bridge |
 | `manifest.json` | Spicetify Marketplace listing |
 
 ## Checking it is live
