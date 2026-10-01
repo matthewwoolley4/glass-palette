@@ -72,10 +72,15 @@ section[data-testid="component-shelf"], .main-shelf-shelf { margin-bottom: 34px;
 .main-shelf-header, section[data-testid="component-shelf"] > div:first-child { padding-inline: 4px !important; margin-bottom: 14px; margin-top: 10px; }
 .main-shelf-title, .main-shelf-header h2, section[data-testid="component-shelf"] h2, .main-shelf-header a[href] > span:first-child,
 [data-testid="home-page"] h2 { font-weight: 800; letter-spacing: -0.025em; color: var(--rim) !important; }
-.main-shelf-seeAll, .main-shelf-header a[href*="section"], section[data-testid="component-shelf"] > div:first-child a[href] {
+/* The "Show all" pill. Spotify 1.3.3 builds the shelf header as an Encore listRow whose title (h2) is ALSO a link
+   into the section, so the title links are excluded or "Made For Matty" renders as a tiny uppercase pill. */
+.main-shelf-seeAll, .main-shelf-header a[href*="section"]:not(h2 a),
+section[data-testid="component-shelf"] > div:first-child a[href]:not(h2 a):not([data-encore-id="listRowTitle"] a) {
   font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(from var(--rim) r g b / 0.70) !important;
   padding: 6px 14px !important; border-radius: 999px !important; background: rgb(255 255 255 / 0.06) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14);
 }
+/* 1.3.3's listRow slot stretches its link to the full row height (52 px); keep the pill its own size */
+section[data-testid="component-shelf"] [class*="list-row__slot"] > a[href] { height: auto !important; align-self: auto !important; align-items: center !important; line-height: 1.2 !important; }
 /* Cards carry inset rims only. A 30 px drop shadow on every card means a separate blur pass per card on every
    scrolled frame, and a home page holds sixty of them ("when i scroll vertical its slow").
    The glass reads the same from the rim and the fill; the blur was doing nothing the eye can name. */
