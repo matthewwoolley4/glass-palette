@@ -163,6 +163,19 @@
 
   // lyrics: label every line passed / active / next and how far it is from the sung line, for the depth-of-field look
   let lyricsBox = null, lyricsObs = null;
+  // The stage is the pane the words sit in: the main view, or (Spotify 1.3.3) the in-window Now Playing view, which
+  // lies over the whole window. Its scroller carries the fade there. Checked on every pass, because a re-render
+  // can drop our class.
+  const tagLyricStage = (box) => {
+    for (const old of document.querySelectorAll('.og-lyric-stage, .og-lyric-scroll')) old.classList.remove('og-lyric-stage', 'og-lyric-scroll');
+    // (not the right panel's small "Lyrics preview" card: the panel is a Root__ pane, the Now Playing view is not)
+    const stage = box.closest('.main-view-container') || [...document.querySelectorAll('.Root__top-container > *')].find((e) => e.contains(box) && !/\bRoot__/.test(e.className));
+    if (!stage) return;
+    stage.classList.add('og-lyric-stage');
+    let sc = box.parentElement;
+    while (sc && sc !== stage && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+    if (sc && sc !== stage) sc.classList.add('og-lyric-scroll');
+  };
   const labelLyrics = () => {
     const box = document.querySelector('[style*="--lyrics-color-active"]');
     if (box !== lyricsBox) {                                                // a new lyrics page: watch it for line changes
@@ -175,6 +188,7 @@
       if (box) { lyricsObs = new MutationObserver(() => labelLyrics()); lyricsObs.observe(box, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true }); }
     }
     if (!box) return;
+    if (!box.closest('.og-lyric-stage')) tagLyricStage(box);
     if (clockLyrics(box)) return;                                            // our own clock ran the lines
     const lines = [...box.querySelectorAll('div[dir]')];
     if (lines.length < 3) return;
@@ -233,7 +247,7 @@
     }, { once: true });
   };
   const lyricCanvas = () => {
-    const pane = document.querySelector('.main-view-container');
+    const pane = document.querySelector('.og-lyric-stage');
     const want = localStorage.getItem('office-glass-lyric-canvas') !== '0' && lyricsBox && pane && pane.contains(lyricsBox);
     let v = document.getElementById('og-lyric-canvas');
     if (!want) { if (v) { v.pause(); v.remove(); } return; }
@@ -257,9 +271,52 @@
     let playing = true; try { playing = Spicetify.Player.isPlaying(); } catch (e) {}
     if (playing && v.paused) v.play().catch(() => {}); else if (!playing && !v.paused) v.pause();
   };
+  // ---- Spotify 1.3.3's in-window Now Playing view ("not seeing song etc") ----
+  // It shows only the playlist's name at the top left: no song, no artist, no cover. Tag the view so the theme can
+  // dress every mode of it (lyrics, artwork, artist), and put the song in its header in place of the playlist name.
+  let npvKey = null;
+  const npvSong = (fs) => {
+    // found by its tool pill, which it has in a window and in full screen (full screen drops the Minimize button);
+    // the right panel has a pill too, but the panel is a Root__ pane
+    const tools = !fs && document.querySelector('[aria-label="Media control options"]');
+    const view = tools && [...document.querySelectorAll('.Root__top-container > *')].find((e) => e.contains(tools) && !/\bRoot__/.test(e.className));
+    document.documentElement.classList.toggle('og-npv-on', !!view);
+    if (!view) { npvKey = null; return; }
+    if (!view.classList.contains('og-npv')) { for (const o of document.querySelectorAll('.og-npv')) o.classList.remove('og-npv'); view.classList.add('og-npv'); }
+    const head = tools.parentElement && tools.parentElement.parentElement;
+    if (!head || !view.contains(head)) return;
+    head.classList.add('og-npv-head');
+    let el = document.getElementById('og-npv-song');
+    // the song sits on the view itself, not in the header: Spotify fades the header out after a few idle seconds,
+    // and the song is the one thing that should stay readable from across the room
+    if (!el || el.parentElement !== view) {
+      if (el) el.remove();
+      el = document.createElement('div'); el.id = 'og-npv-song';
+      el.innerHTML = '<i></i><div><b></b><span></span></div>';
+      view.appendChild(el); npvKey = null;
+    }
+    let it = null; try { it = Spicetify.Player.data.item; } catch (e) {}
+    if (!it || it.uri === npvKey) return;
+    npvKey = it.uri;
+    let art = ''; try { const md = it.metadata || {}; art = (md.image_url || md.image_large_url || '').replace('spotify:image:', 'https://i.scdn.co/image/'); } catch (e) {}
+    el.children[0].style.backgroundImage = art ? 'url("' + art + '")' : '';
+    el.querySelector('b').textContent = it.name || '';
+    el.querySelector('span').textContent = (it.artists || []).map((a) => a.name).join(', ');
+    // rise in only for a new song, not every time the view changes mode
+    if (el.dataset.uri !== it.uri) { el.dataset.uri = it.uri; el.classList.remove('og-in'); void el.offsetWidth; el.classList.add('og-in'); }
+  };
   const tick = () => {
-    const root = document.querySelector('[style*="--cinema-mode-bg-color-from"]');
+    // Spotify 1.3.3 also puts the cinema colours on the lyrics inside the in-window Now Playing view, so the colours
+    // alone no longer mean full screen: Spotify's own "Exit full screen" button has to be there too. Without this the
+    // full-screen title, capsules and wallpaper were built into the lyric list ("feels broken on lyrics").
+    const cinema = document.querySelector('[style*="--cinema-mode-bg-color-from"]');
+    // In full screen showing lyrics the cinema colours sit on the lyric list too: that is a lyrics page, not the
+    // artwork stage, so it gets the Now Playing view's lyrics stage instead of capsules built into the words.
+    const lyr = document.querySelector('[style*="--lyrics-color-active"]');
+    const root = cinema && document.querySelector('[aria-label="Exit full screen"]') && !(lyr && cinema.contains(lyr)) ? cinema : null;
     document.documentElement.classList.toggle('office-glass-fs', !!root);
+    if (!root) for (const old of document.querySelectorAll('#office-glass-capsules, #office-glass-title, #office-glass-scene, #office-glass-wall')) old.remove();
+    npvSong(!!root);
     labelLyrics();
     pickVoice();
     flatArt();
@@ -592,5 +649,14 @@
   window.__officeGlassLyricTimer = setInterval(() => { if (lyricsBox && lyricTimes) labelLyrics(); }, 100);
   clearInterval(window.__officeGlassTimer);
   window.__officeGlassTimer = setInterval(tick, 600);
+  // A tap on the Now Playing view's modes (lyrics, artwork, artist), the lyrics button, full screen or the view's own
+  // buttons changes the whole stage. Waiting for the next 600 ms pass showed Spotify's raw look for up to half a
+  // second ("switching between lyrics mode top right not working great"), so re-read the page right after the tap.
+  if (window.__ogModeTap) document.removeEventListener('click', window.__ogModeTap, true);
+  window.__ogModeTap = (e) => {
+    const t = e.target && e.target.closest && e.target.closest('[aria-label="Media control options"] button, [data-testid="lyrics-button"], [data-testid="fullscreen-mode-button"], [aria-label*="ull screen"], [aria-label*="Now Playing view"], [aria-label="Now playing view"]');
+    if (t) for (const ms of [0, 40, 120, 300]) setTimeout(tick, ms);
+  };
+  document.addEventListener('click', window.__ogModeTap, true);
   tick();
 })();

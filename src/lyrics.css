@@ -17,7 +17,7 @@
   --lyrics-color-passed: rgb(246 241 232 / 0.26) !important;
   --lyrics-color-messaging: rgb(246 241 232 / 0.6) !important;
 }
-html.og-lyrics-on .main-view-container {
+html.og-lyrics-on .og-lyric-stage {
   background:
     radial-gradient(70% 50% at 36% 50%, rgb(from var(--gs) r g b / 0.26), transparent 72%),
     radial-gradient(40% 40% at 94% 8%, rgb(from var(--gs2) r g b / 0.20), transparent 70%) !important;
@@ -55,8 +55,8 @@ html.og-lyrics-on .main-view-container {
 /* ---- v4 ("lyric mode could be WAY more beautiful") ----
    The page is the stage: the wallpaper's glass, tinted to the song, sits faint behind the words; the words are
    centred, larger and airier; waiting lines are soft frosted white (no hollow outline), the sung line is lit. */
-html.og-lyrics-on .main-view-container { position: relative; isolation: isolate; }
-html.og-lyrics-on .main-view-container::before {
+html.og-lyrics-on .og-lyric-stage { position: relative; isolation: isolate; }
+html.og-lyrics-on .og-lyric-stage::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: var(--og-wall) center 40% / 108% auto no-repeat;    /* wider than the pane: its edges fall outside, no shape shows */
   opacity: 0.26; filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
@@ -66,7 +66,7 @@ html.og-lyrics-on .main-view-container::before {
 [style*="--lyrics-color-active"] > div > div { width: min(1240px, calc(100% - clamp(32px, 8vw, 160px))) !important; margin-inline: auto !important; }
 /* the wallpaper behind the words is a photograph stretched over a whole pane; at 26% on a near-black ground its
    own gradients band. A fine grain over the top dithers the steps away, the same trick the full-screen stage uses. */
-html.og-lyrics-on .main-view-container::after {
+html.og-lyrics-on .og-lyric-stage::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.05;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
@@ -119,7 +119,7 @@ html.og-lyrics-on .main-view-container::after {
 /* The room behind the words moves: the picture drifts in a slow push and pan (about 40 s each way). Transform only,
    so it stays on the compositor and costs nothing per frame. It does not take the beat swell: this box holds every
    lyric line, and changing a value on it each frame would restyle all of them (the video below it still breathes). */
-html.og-lyrics-on .main-view-container::before {
+html.og-lyrics-on .og-lyric-stage::before {
   animation: og-lyric-drift 40s ease-in-out infinite alternate;
 }
 @keyframes og-lyric-drift {
@@ -140,3 +140,101 @@ html.og-lyrics-on .main-view-container::before {
 }
 html.office-glass-paused #og-lyric-canvas { opacity: 0.2; }
 
+
+/* ---- Spotify 1.3.3: the in-window Now Playing view ("feels broken on lyrics", "not seeing song etc") ----
+   That view lies over the whole window, right panel included, and Spotify paints it solid in the song's colour: a flat
+   red slab in artwork mode, and with the theme's transparent lyric colours, the empty right panel showing through the
+   words. The runtime tags it .og-npv in every mode. It gets the main pane's ground, solid, with the room (the song's
+   light and the wallpaper's glass) behind it, quieter than the main view's so the waiting lines stay readable. */
+html.og-npv-on .og-npv {
+  position: relative; isolation: isolate;
+  background:
+    radial-gradient(70% 50% at 36% 50%, rgb(from var(--gs) r g b / 0.26), transparent 72%),
+    radial-gradient(40% 40% at 94% 8%, rgb(from var(--gs2) r g b / 0.20), transparent 70%),
+    linear-gradient(180deg, rgb(19 24 31) 0%, rgb(10 14 20) 100%) !important;
+  border: 1px solid rgb(from var(--rim) r g b / 0.13); border-radius: 20px; overflow: hidden;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 14px 36px rgb(0 0 0 / 0.36);
+  -webkit-mask-image: none !important; mask-image: none !important;
+}
+html.og-npv-on .og-npv::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--og-wall) center 40% / 108% auto no-repeat;
+  opacity: 0.14; filter: hue-rotate(var(--og-hue, 0deg)) saturate(var(--og-sat, 1));
+  transition: filter 1.4s ease;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent); mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);
+  animation: og-lyric-drift 40s ease-in-out infinite alternate;
+}
+/* Spotify's own slabs inside the view (the action bar, the cinema colour block behind the artwork) go see-through */
+html.og-npv-on .og-npv .main-actionBar-ActionBarContainer,
+html.og-npv-on .og-npv [style*="--cinema-mode-bg-color-from"],
+html.og-npv-on .og-npv [style*="--cinema-mode-bg-color-from"] > div:first-child { background: transparent !important; }
+/* the words fade out under the header and above the dock; the header's tools stay crisp */
+/* (in pixels at the top: the header now holds the song, so the words are fully gone behind it and light up below it) */
+html.og-lyrics-on .og-npv .og-lyric-scroll {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, transparent 84px, #000 190px, #000 84%, transparent 100%) !important;
+          mask-image: linear-gradient(180deg, transparent 0, transparent 84px, #000 190px, #000 84%, transparent 100%) !important;
+}
+/* the view's tools at the top right: one pill of smoked glass, as in full screen (no blur: the room behind drifts) */
+html.og-npv-on .og-npv div:has(> [aria-label="Media control options"]) {
+  padding: 4px 10px; border-radius: 26px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.04)), rgb(12 15 20 / 0.72);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.16), 0 10px 30px rgb(0 0 0 / 0.4);
+}
+
+/* The song, at the top left where Spotify only names the playlist (and stays there when Spotify fades its header): the cover as a small glass tile, the title in
+   weight, the artist quieter beneath. The playlist name it replaces is the least useful thing on the screen. */
+html.og-npv-on .og-npv-head { align-items: center !important; }
+html.og-npv-on .og-npv-head > div:not(#og-npv-song):not(:has([aria-label="Media control options"])),
+.Root__top-container > :not([class*="Root__"]) > :has(> div > [aria-label="Media control options"]) > :not(:has([aria-label="Media control options"])) { display: none; }   /* (structural too: hidden from the first frame of a switch) */
+#og-npv-song { display: none; }
+html.og-npv-on #og-npv-song {
+  display: flex; align-items: center; gap: 14px; min-width: 0; max-width: calc(100% - 420px);
+  position: absolute; top: 12px; left: 24px; z-index: 6; pointer-events: none;
+}
+#og-npv-song > i {
+  flex: none; width: 60px; height: 60px; border-radius: 14px; background: rgb(255 255 255 / 0.06) center / cover no-repeat;
+  box-shadow: 0 0 0 1px rgb(from var(--rim) r g b / 0.28), 0 0 0 4px rgb(0 0 0 / 0.22), 0 10px 26px rgb(0 0 0 / 0.5);
+}
+#og-npv-song > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; text-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 18px rgb(0 0 0 / 0.5); }   /* readable on a bright artist photo */
+#og-npv-song b {
+  font: 800 calc(25px * var(--og-ui, 1)) / 1.15 Manrope, sans-serif; letter-spacing: -0.01em; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#og-npv-song span {
+  font: 600 calc(16px * var(--og-ui, 1)) / 1.2 Manrope, sans-serif; letter-spacing: 0.02em; color: rgb(246 241 232 / 0.62);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#og-npv-song.og-in { animation: og-npv-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes og-npv-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+
+/* Spotify's "Sync" button, shown after you scroll the lyrics away from the sung line: a glass pill, not a white one */
+html.og-lyrics-on .og-lyric-stage button[data-encore-id="buttonPrimary"] .e-10860-button-primary__inner {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.05)), rgb(12 15 20 / 0.78) !important;
+  color: #fff !important; border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.18), 0 10px 30px rgb(0 0 0 / 0.45) !important;
+}
+html.og-lyrics-on .og-lyric-stage button[data-encore-id="buttonPrimary"] .e-10860-button-primary__inner * { fill: #fff !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+
+/* Artwork mode: the cover floats over the scrolling sections, and the first one ("Related music videos") peeked up
+   into its bottom edge. Lift it a little and take it down a touch so it clears, and frame it in glass, as full
+   screen does. scale/translate are their own properties, so Spotify's own transform on it is left alone. */
+html.og-npv-on .og-npv .cover-art {
+  scale: 0.9; translate: 0 -34px; border-radius: 22px !important;
+  box-shadow: 0 0 0 1.5px rgb(from var(--rim) r g b / 0.62), 0 0 0 9px rgb(0 0 0 / 0.22), 0 0 0 10px rgb(from var(--rim) r g b / 0.24), 0 50px 110px rgb(0 0 0 / 0.72);
+}
+html.og-npv-on .og-npv .cover-art img { border-radius: 22px !important; }
+/* the song's Canvas behind the words: this view is the whole window, so the loop is far bigger and brighter than in
+   the main view, and busy Canvases (big lettering, flashes) fought the waiting lines. Dimmer here. */
+html.og-npv-on .og-npv #og-lyric-canvas { opacity: 0.13; }
+html.og-npv-on.office-glass-paused .og-npv #og-lyric-canvas { opacity: 0.1; }
+
+/* Full screen showing lyrics: the view covers the whole window, but the theme lifts the top bar (z-index 20) so it
+   painted over the song and the tool pill. In full screen the view owns the top edge. */
+html.fullscreen.og-npv-on .Root__globalNav { visibility: hidden; }
+/* The view's ground also comes from its structure (it is the top-level box whose header holds the tool pill), so it
+   is solid from the very first frame of a mode switch, before the runtime has tagged anything: no flash of the empty
+   right panel behind the words. Child combinators only, so the :has() check stays cheap. */
+.Root__top-container > :has(> div > div > [aria-label="Media control options"]):not([class*="Root__"]) {
+  background: linear-gradient(180deg, rgb(19 24 31) 0%, rgb(10 14 20) 100%);
+  border-radius: 20px;
+}

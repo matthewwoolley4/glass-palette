@@ -40,7 +40,7 @@ os.makedirs(out, exist_ok=True)
 # shipped the same image FOUR times: 665 KB, 64% of the entire theme. Declare it once and let both sites reference
 # the custom property. Identical pixels, and the file stops being mostly one picture repeated.
 assert "__WALL__" not in css, "a source file still pastes the wallpaper directly; use var(--og-wall)"
-assert css.count("var(--og-wall)") == 3, "expected exactly the three wallpaper use sites (stage, lyrics, settings preview)"
+assert css.count("var(--og-wall)") == 4, "expected exactly the four wallpaper use sites (stage, lyrics, Now Playing view, settings preview)"
 if wall_uri: css = ':root { --og-wall: url("%s"); }\n\n' % wall_uri + css
 # The credit line at the top of both shipped files, so a copy of just those files still says where it came from.
 # The version is the one install-remote.sh pins, which tools/release.py sets before it runs this build.
