@@ -1233,9 +1233,8 @@ section[data-testid="component-shelf"] [class*="list-row__slot"] > a[href] { hei
 .view-homeShortcutsGrid-shortcut [data-testid="play-button"] svg, [data-testid="home-shortcuts-grid"] [data-testid="play-button"] svg,
 .view-homeShortcutsGrid-shortcut [class*="PlayButton" i] svg, [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] svg,
 .main-card-card [class*="PlayButton" i] svg { fill: rgb(12 15 20) !important; color: rgb(12 15 20) !important; }
-.view-homeShortcutsGrid-shortcut [class*="PlayButton" i], [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] {
-  border-radius: 50% !important; background: radial-gradient(120% 120% at 30% 18%, #ffffff, var(--rim) 46%, rgb(214 208 198)) !important;
-}
+/* the tile's play button fades in on hover but its container is always there, so painting the container left a blank
+   white circle on every tile. The bead is painted on the button only, in spotify136.css. */
 /* the shortcut tiles at the top of Home (the six wide tiles) */
 .view-homeShortcutsGrid-shortcut, [data-testid="home-shortcuts-grid"] > *, .main-home-content .main-heroCard-card {
   border-radius: 16px !important; overflow: hidden;
@@ -1601,3 +1600,91 @@ html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-trackInf
 html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-trackInfo .encore-text-marginal button { font-size: calc(13px * var(--og-ui)) !important; }
 html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-coverArtContainer,
 html.office-glass-touch .main-nowPlayingBar-left .main-nowPlayingWidget-coverArtContainer .cover-art { width: 68px !important; height: 68px !important; }
+
+
+/* Glass Palette: Spotify 1.3.6. Spotify rotated every hashed class in this build and Spicetify's css-map has none of
+   them, so Root__now-playing-bar, Root__main-view, main-trackInfo-* and main-trackList-* no longer exist in the app.
+   Everything here hangs on what survives a rotation: ids, roles, Encore ids and the names Spotify writes by hand.
+   Never add a hashed class to this file. */
+
+/* ---- the dock's row: Spotify paints it #000, which read as a black strip behind the glass ---- */
+.Root__top-container > div:has(aside[data-testid="now-playing-bar"]) { background: transparent !important; }
+html.office-glass-fs .Root__top-container > div:has(aside[data-testid="now-playing-bar"]) {
+  background: #040608 !important; max-height: 210px; overflow: hidden;
+  transition: max-height 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+}
+html.office-glass-hidedock .Root__top-container > div:has(aside[data-testid="now-playing-bar"]) { max-height: 0; opacity: 0; pointer-events: none; }
+
+/* ---- the panes ---- */
+#Desktop_LeftSidebar_Id, #main-view, #Desktop_PanelContainer_Id {
+  background: linear-gradient(180deg, rgb(19 24 31 / 0.82) 0%, rgb(10 14 20 / 0.78) 100%) !important;
+  border: 1px solid rgb(from var(--rim) r g b / 0.13) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(255 255 255 / 0.018), 0 14px 36px rgb(0 0 0 / 0.36);
+  overflow: hidden;
+}
+/* the library and the right panel paint their insides from this token: clear it and the pane is the only fill */
+#Desktop_LeftSidebar_Id, #Desktop_PanelContainer_Id { --background-base: transparent; }
+#Desktop_PanelContainer_Id::before { background: transparent !important; }
+.Root__globalNav input { background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04)) !important; border-radius: 999px !important; color: var(--rim) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(from var(--rim) r g b / 0.14); }
+
+/* ---- play beads: the big button on playlist and album pages, and the card button ---- */
+.main-actionBar-ActionBarRow button[data-encore-id="buttonPrimary"][data-is-icon-only="true"] > span,
+.main-card-card button[data-encore-id="buttonPrimary"] > span, [data-encore-id="card"] button[data-encore-id="buttonPrimary"] > span,
+.view-homeShortcutsGrid-playButton > span {
+  background: radial-gradient(120% 120% at 30% 18%, #ffffff, var(--rim) 46%, rgb(214 208 198)) !important;
+  box-shadow: inset 0 1.5px 0 #fff, 0 8px 22px rgb(0 0 0 / 0.5);
+}
+/* Home tiles: the bead comes up on hover over the end of the name, so the name fades out under it */
+.view-homeShortcutsGrid-shortcut:hover .view-homeShortcutsGrid-nameWrapper,
+.view-homeShortcutsGrid-shortcut:focus-within .view-homeShortcutsGrid-nameWrapper {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 46px), transparent calc(100% - 24px));
+          mask-image: linear-gradient(90deg, #000 calc(100% - 46px), transparent calc(100% - 24px));
+}
+html.office-glass-touch .view-homeShortcutsGrid-PlayButtonContainer { display: none; }   /* no hover on a finger; the tile opens on a tap */
+
+/* ---- the dock's left group ---- */
+.main-nowPlayingWidget-nowPlaying > :first-child { flex: 0 0 auto; border-radius: 10px !important; overflow: hidden; background: transparent !important; }
+.main-nowPlayingWidget-nowPlaying > :first-child img { border-radius: 10px !important; background: transparent !important; }
+.main-nowPlayingWidget-nowPlaying > :nth-child(2) { flex: 1 1 auto; min-width: 0 !important; overflow: hidden; }
+.main-nowPlayingWidget-nowPlaying > :nth-child(2) [dir="auto"] { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.main-nowPlayingWidget-nowPlaying > :last-child { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+
+/* ---- volume: Spotify lets the slider shrink to nothing when the row is tight ("volume is hard to change").
+   It keeps its width, the knob always shows, and the grab area is 28 px tall around the 5 px bar. ---- */
+[data-testid="volume-bar"] { flex: 0 0 136px !important; min-width: 136px; }
+[data-testid="volume-bar"] > :last-child:not(button) { flex: 1 1 auto; min-width: 92px; }
+[data-testid="volume-bar"] .playback-progressbar { height: 28px; }
+[data-testid="volume-bar"] .progress-bar { --progress-bar-height: 5px; }
+[data-testid="volume-bar"] .x-progressBar-progressBarBg { height: 5px !important; }
+[data-testid="volume-bar"] .progress-bar__slider { display: flex; box-shadow: 0 2px 8px rgb(0 0 0 / 0.5), 0 0 0 3px rgb(from var(--gs) r g b / 0.25); }
+
+/* ---- track lists ---- */
+[role="grid"] [role="row"]:not([aria-rowindex="1"]) > div { border-radius: 14px !important; transition: background 0.14s ease-out, box-shadow 0.14s ease-out !important; }
+[role="grid"] [role="row"]:not([aria-rowindex="1"]) > div:hover { background: linear-gradient(90deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.05)) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.10); }
+[role="grid"] [role="row"][aria-selected="true"] > div { background: rgb(255 255 255 / 0.11) !important; box-shadow: inset 0 0 0 1px rgb(from var(--rim) r g b / 0.20); }
+[role="grid"] [role="row"]:has(button[aria-label^="Pause"]) > div {
+  background: linear-gradient(90deg, rgb(from var(--gs) r g b / 0.22), rgb(from var(--gs) r g b / 0.06) 60%, transparent) !important;
+  box-shadow: inset 3px 0 0 rgb(from var(--gs) r g b / 0.9), inset 0 0 0 1px rgb(from var(--gs) r g b / 0.18);
+}
+[role="grid"] [role="row"] img { border-radius: 8px !important; }
+[role="grid"] [role="row"] button[aria-checked="true"] svg { fill: var(--gs) !important; color: var(--gs) !important; }
+
+/* ---- a half-screen window: the dock's right group takes the room its controls need, the progress bar gives way ---- */
+@media (max-width: 1180px) {
+  .main-nowPlayingBar-nowPlayingBar { grid-template-columns: minmax(170px, 1fr) minmax(220px, 1fr) auto !important; column-gap: 14px !important; }
+  [data-testid="volume-bar"] { flex-basis: 124px !important; min-width: 124px; }
+  [data-testid="volume-bar"] > :last-child:not(button) { min-width: 84px; }
+  #Desktop_LeftSidebar_Id, #main-view, #Desktop_PanelContainer_Id { border-radius: 16px !important; }
+  section[data-testid="component-shelf"], .main-shelf-shelf { margin-bottom: 22px; }
+  .main-card-card, [data-encore-id="card"] { padding: 10px !important; border-radius: 16px !important; }
+  .main-card-card img, [data-encore-id="card"] img { border-radius: 10px !important; }
+  .main-actionBar-ActionBar, .main-actionBar-ActionBarRow { padding-block: 8px !important; gap: 10px !important; }
+}
+@media (max-width: 900px) {
+  .main-nowPlayingBar-nowPlayingBar { grid-template-columns: minmax(150px, 1fr) minmax(190px, 1fr) auto !important; column-gap: 10px !important; }
+  [data-testid="context-item-info-quality"] { display: none; }
+  .main-nowPlayingWidget-nowPlaying > :first-child, .main-nowPlayingWidget-nowPlaying > :first-child img { width: 44px !important; height: 44px !important; }
+  [data-testid="volume-bar"] { flex-basis: 116px !important; min-width: 116px; }
+  [data-testid="volume-bar"] > :last-child:not(button) { min-width: 72px; }
+}

@@ -103,7 +103,7 @@
     let pos = 0; try { pos = Spicetify.Player.getProgress() + lyricLead(); } catch (e) { return false; }
     let active = -1; for (let i = 0; i < lyricTimes.length; i++) { if (lyricTimes[i] <= pos) active = i; else break; }
     if (active < 0) active = 0;
-    const ar = lines[active].getBoundingClientRect(), view = (document.querySelector('.Root__main-view') || document.body).getBoundingClientRect();
+    const ar = lines[active].getBoundingClientRect(), view = (document.querySelector('.Root__main-view, #main-view') || document.body).getBoundingClientRect();
     document.documentElement.classList.toggle('office-glass-lyrics-free', ar.bottom < view.top + 40 || ar.top > view.bottom - 40);
     lines.forEach((l, i) => {
       const og = i < active ? 'passed' : i === active ? 'active' : 'next', d = String(Math.min(6, Math.abs(i - active)));
@@ -141,7 +141,7 @@
   // holding an image whose alt is the playing artist. Then the theme can dress it without guessing at Spotify's
   // build-specific classes.
   const tagAbout = () => {
-    const m = document.querySelector('.main-nowPlayingView-mainContainer');
+    const m = document.querySelector('.main-nowPlayingView-mainContainer, #Desktop_PanelContainer_Id');
     if (!m) return;
     const it = Spicetify.Player.data && Spicetify.Player.data.item;
     const name = (it && it.artists && it.artists[0] && it.artists[0].name) || '';
@@ -196,7 +196,7 @@
     let active = lines.findIndex((l) => count[l.className] === 1);          // the sung line is the only one with its class
     if (active < 0) { lines.forEach((l) => { if (l.dataset.og) { delete l.dataset.og; l.style.removeProperty('--d'); } }); return; }   // unsynced lyrics: leave them plain
     // is the sung line on screen? If not, the person is browsing: drop the depth-of-field
-    const ar = lines[active].getBoundingClientRect(), view = (document.querySelector('.Root__main-view') || document.body).getBoundingClientRect();
+    const ar = lines[active].getBoundingClientRect(), view = (document.querySelector('.Root__main-view, #main-view') || document.body).getBoundingClientRect();
     document.documentElement.classList.toggle('office-glass-lyrics-free', ar.bottom < view.top + 40 || ar.top > view.bottom - 40);
     lines.forEach((l, i) => {
       const og = i < active ? 'passed' : i === active ? 'active' : 'next', d = String(Math.min(6, Math.abs(i - active)));
@@ -376,7 +376,7 @@
       }
     } catch (e) {}
     // idle layout = Spotify has hidden the dock and moved the artwork down; show our hairline progress then
-    document.documentElement.classList.toggle('office-glass-idle', !document.querySelector('.Root__now-playing-bar aside') || (art && art.getBoundingClientRect().top > 185));
+    document.documentElement.classList.toggle('office-glass-idle', !document.querySelector('.Root__now-playing-bar aside, aside[data-testid="now-playing-bar"]') || (art && art.getBoundingClientRect().top > 185));
     try {
       const bar = tb.querySelector('#office-glass-progress u'), dur = Spicetify.Player.getDuration();
       if (bar && dur > 0) bar.style.width = Math.min(100, Spicetify.Player.getProgress() / dur * 100).toFixed(2) + '%';

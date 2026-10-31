@@ -107,9 +107,8 @@ section[data-testid="component-shelf"] [class*="list-row__slot"] > a[href] { hei
 .view-homeShortcutsGrid-shortcut [data-testid="play-button"] svg, [data-testid="home-shortcuts-grid"] [data-testid="play-button"] svg,
 .view-homeShortcutsGrid-shortcut [class*="PlayButton" i] svg, [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] svg,
 .main-card-card [class*="PlayButton" i] svg { fill: rgb(12 15 20) !important; color: rgb(12 15 20) !important; }
-.view-homeShortcutsGrid-shortcut [class*="PlayButton" i], [data-testid="home-shortcuts-grid"] [class*="PlayButton" i] {
-  border-radius: 50% !important; background: radial-gradient(120% 120% at 30% 18%, #ffffff, var(--rim) 46%, rgb(214 208 198)) !important;
-}
+/* the tile's play button fades in on hover but its container is always there, so painting the container left a blank
+   white circle on every tile. The bead is painted on the button only, in spotify136.css. */
 /* the shortcut tiles at the top of Home (the six wide tiles) */
 .view-homeShortcutsGrid-shortcut, [data-testid="home-shortcuts-grid"] > *, .main-home-content .main-heroCard-card {
   border-radius: 16px !important; overflow: hidden;

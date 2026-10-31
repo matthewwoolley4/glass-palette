@@ -6,7 +6,7 @@
 # The font is embedded (base64) so the theme is one self-contained folder: nothing to install, nothing to download.
 import base64, io, json, os, shutil
 here = os.path.dirname(os.path.abspath(__file__))
-order = ["fullscreen.css", "app.css", "lyrics.css", "voices.css", "like.css", "details.css", "glasstext.css", "wall.css", "dock.css", "lists.css", "settings.css", "touch.css"]   # fullscreen first: it registers --gs / --gs2 and the base tokens
+order = ["fullscreen.css", "app.css", "lyrics.css", "voices.css", "like.css", "details.css", "glasstext.css", "wall.css", "dock.css", "lists.css", "settings.css", "touch.css", "spotify136.css"]   # fullscreen first: it registers --gs / --gs2 and the base tokens
 SCRIPTS = ["runtime.js", "settings.js", "touch.js", "lights.js"]   # settings.js owns stored preferences; touch.js owns finger behaviour; lights.js feeds the optional light server
 FONTS = [  # (file, unicode-range) Manrope variable, weights 200 to 800
     ("manrope-latin-var.woff2", "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"),

@@ -99,7 +99,7 @@
   // app ignoring you ("struggling ... selecting songs").
   document.addEventListener('click', (ev) => {
     if (!on() || ev.detail > 1 || ev.__ogReplay) return;
-    const row = ev.target.closest && ev.target.closest('.main-trackList-trackListRow');
+    const row = ev.target.closest && ev.target.closest('.main-trackList-trackListRow, [role="grid"] [role="row"]');
     if (!row) return;
     if (ev.target.closest('button, a, input, [role="button"], [role="checkbox"]')) return;
     const dbl = new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window, clientX: ev.clientX, clientY: ev.clientY, detail: 2 });
