@@ -169,9 +169,25 @@
   const tagLyricStage = (box) => {
     for (const old of document.querySelectorAll('.og-lyric-stage, .og-lyric-scroll')) old.classList.remove('og-lyric-stage', 'og-lyric-scroll');
     // (not the right panel's small "Lyrics preview" card: the panel is a Root__ pane, the Now Playing view is not)
-    const stage = box.closest('.main-view-container') || [...document.querySelectorAll('.Root__top-container > *')].find((e) => e.contains(box) && !/\bRoot__/.test(e.className));
+    // Spotify 1.3.6 full screen mounts the lyrics outside .Root__top-container and .main-view-container altogether, so
+    // neither lookup lands and the wallpaper, glow and grain never appeared ("no bg in full screen"). The cinema
+    // container is the stage there, but its own box rides inside a scrolled pane (the lyrics sit hundreds of pixels
+    // outside it, so a mask or background on it clips them), so the stage is the still, window-sized parent of
+    // that scrolling pane; the container itself only when nothing above it scrolls.
+    let fs = false;
+    let stage = box.closest('.main-view-container') || [...document.querySelectorAll('.Root__top-container > *')].find((e) => e.contains(box) && !/\bRoot__/.test(e.className));
+    if (!stage) {
+      const cin = box.closest('[style*="--cinema-mode-bg-color-from"]');
+      if (cin) {
+        for (let p = cin.parentElement; p && p !== document.body; p = p.parentElement) {
+          if (p.scrollHeight > p.clientHeight + 4 && /hidden|auto|scroll/.test(getComputedStyle(p).overflowY)) { stage = p.parentElement; break; }
+        }
+        stage = stage || cin; fs = true;
+      }
+    }
     if (!stage) return;
     stage.classList.add('og-lyric-stage');
+    stage.classList.toggle('og-lyric-fs', fs);
     let sc = box.parentElement;
     while (sc && sc !== stage && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
     if (sc && sc !== stage) sc.classList.add('og-lyric-scroll');

@@ -24,6 +24,9 @@ html.og-lyrics-on .og-lyric-stage {
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 82%, transparent 100%);
           mask-image: linear-gradient(180deg, transparent 0, #000 13%, #000 82%, transparent 100%);
 }
+/* Spotify 1.3.6 full screen: the stage is the window-sized pane that covers the app, not a pane inside it. The fade
+   above would let the app behind show through the top and foot, so this stage keeps a solid ground and no mask. */
+html.og-lyrics-on .og-lyric-stage.og-lyric-fs { background-color: #040608 !important; -webkit-mask-image: none; mask-image: none; }
 /* the column: Spotify fixes it at 1024 px inside a centred flex row */
 [style*="--lyrics-color-active"] > div > div { width: min(1280px, calc(100% - 120px)) !important; max-width: none; flex: none; }
 [data-og] {
